@@ -21,9 +21,14 @@ bool fileIsPresent()
 {
     FILE *h;
     h = fopen("data.dat", "r+b");
-    bool res = !(h == NULL);
+
+    if (!h)
+    {
+        return false;
+    }
+
     fclose(h);
-    return res;
+    return true;
 }
 
 int main(int argc, char* argv[])
