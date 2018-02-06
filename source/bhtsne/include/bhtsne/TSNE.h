@@ -37,8 +37,8 @@
 #include <vector>
 #include <random>
 
-#include <bhtsne/vector2d.h>
-#include <bhtsne/sparsematrix.h>
+#include <bhtsne/Vector2D.h>
+#include <bhtsne/SparseMatrix.h>
 #include <bhtsne/bhtsne_api.h> // generated header for export macros
 
 
@@ -408,9 +408,10 @@ protected:
     void runApproximation();
     void runExact();
 
-    // TODO this is only virtual for testing -> change test!
-    virtual Vector2D<double> computeGradient(SparseMatrix & similarities);
+    template<unsigned int D>
+    Vector2D<double> computeGradient(SparseMatrix & similarities);
     Vector2D<double> computeGradientExact(const Vector2D<double> & Perplexity);
+    template<unsigned int D>
     double evaluateError(SparseMatrix & similarities);
     double evaluateErrorExact(const Vector2D<double> & Perplexity);
     void computeGaussianPerplexity(SparseMatrix & similarities);

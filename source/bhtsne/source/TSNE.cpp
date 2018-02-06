@@ -31,7 +31,7 @@
  */
 
 
-#include <bhtsne/tsne.h>
+#include <bhtsne/TSNE.h>
 
 
 #include <cassert>
@@ -47,8 +47,8 @@
 #include <vector>
 #include <numeric>
 
-#include "spacepartitioningtree.h"
-#include "vantagepointtree.h"
+#include "SpacePartitioningTreeTemplate.h"
+#include "VantagePointTree.h"
 
 #include <bhtsne/bhtsne-version.h> // includes BHTSNE_VERSION macro
 
@@ -69,10 +69,11 @@ TSNE::TSNE()
 }
 
 // Compute gradient of the t-SNE cost function (using Barnes-Hut algorithm) (approximately)
+template<unsigned int D>
 Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
 {
     // Construct space-partitioning tree on current map
-    auto tree = SpacePartitioningTree(m_result);
+    auto tree = SpacePartitioningTree<D>(m_result);
 
     // Compute all terms required for t-SNE gradient
     auto pos_f = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
@@ -80,6 +81,7 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
 
     auto neg_f = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
     double sum_Q = 0.0;
+    // omp version on windows (2.0) does only support signed loop variables
     #pragma omp parallel for reduction(+:sum_Q)
     for (int n = 0; n < m_dataSize; ++n)
     {
@@ -91,9 +93,9 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
     for (unsigned int i = 0; i < m_dataSize; ++i)
     {
         for (unsigned int j = 0; j < m_outputDimensions; ++j)
-            {
-                result[i][j] = pos_f[i][j] - (neg_f[i][j] / sum_Q);
-            }
+        {
+            result[i][j] = pos_f[i][j] - (neg_f[i][j] / sum_Q);
+        }
     }
     return result;
 }
@@ -112,18 +114,13 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
     // Q = similarities of low dimensional output data
     auto Q = Vector2D<double>(m_dataSize, m_dataSize);
     double sum_Q = 0.0;
-    //TODO compute only half of matrix
     for (unsigned int n = 0; n < m_dataSize; ++n)
     {
-    	for (unsigned int m = 0; m < m_dataSize; ++m)
+        for (unsigned int m = n + 1; m < m_dataSize; ++m)
         {
-            if (n == m)
-            {
-                continue;
-            }
-
             Q[n][m] = 1.0 / (1.0 + distances[n][m]);
-            sum_Q += Q[n][m];
+            Q[m][n] = Q[n][m];
+            sum_Q += 2 * Q[n][m];
         }
     }
 
@@ -164,18 +161,13 @@ double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
     // Compute Q-matrix and normalization sum
     //TODO init to 0 (or evaluate consequences)
     double sum_Q = std::numeric_limits<double>::min();
-    //TODO only compute half of matrix
     for (unsigned int n = 0; n < m_dataSize; ++n)
     {
-    	for (unsigned int m = 0; m < m_dataSize; ++m)
+        for (unsigned int m = n + 1; m < m_dataSize; ++m)
         {
-            if (n == m)
-            {
-                continue;
-            }
-
             Q[n][m] = 1.0 / (1.0 + distances[n][m]);
-            sum_Q += Q[n][m];
+            Q[m][n] = Q[n][m];
+            sum_Q += 2 * Q[n][m];
         }
     }
 
@@ -201,10 +193,11 @@ double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
 }
 
 // Evaluate t-SNE cost function (approximately)
+template<unsigned int D>
 double TSNE::evaluateError(SparseMatrix & similarities)
 {
     // Get estimate of normalization term
-    auto tree = SpacePartitioningTree(m_result);
+    auto tree = SpacePartitioningTree<D>(m_result);
     auto buff = std::vector<double>(m_outputDimensions, 0.0);
     double sum_Q = 0.0;
     for (unsigned int i = 0; i < m_dataSize; ++i)
@@ -623,7 +616,10 @@ void TSNE::runApproximation()
 	for (unsigned int iteration = 1; iteration <= m_iterations; ++iteration)
     {
 		// Compute approximate gradient
-        auto gradients = computeGradient(inputSimilarities);
+        auto gradients = 
+            (m_outputDimensions == 2) ? computeGradient<2>(inputSimilarities) : 
+            (m_outputDimensions == 3) ? computeGradient<3>(inputSimilarities) :
+            computeGradient<0>(inputSimilarities);
 
 		// Update gains
         for (unsigned int i = 0; i < m_dataSize; ++i)
@@ -673,7 +669,10 @@ void TSNE::runApproximation()
 		if (iteration % 50 == 0 || iteration == m_iterations)
         {
 			// doing approximate computation here!
-			double error = evaluateError(inputSimilarities);
+			double error = 
+                (m_outputDimensions == 2) ? evaluateError<2>(inputSimilarities) :
+                (m_outputDimensions == 3) ? evaluateError<3>(inputSimilarities) :
+                evaluateError<0>(inputSimilarities); // assert(false)
 			std::cout << "Iteration " << iteration << ": error is " << error << std::endl;
 		}
 	}
