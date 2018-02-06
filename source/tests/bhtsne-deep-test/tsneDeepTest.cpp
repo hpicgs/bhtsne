@@ -465,12 +465,71 @@ TEST_F(TsneDeepTest, RunExact)
 
 TEST_F(TsneDeepTest, SaveToStream)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto outputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    m_tsne.m_dataSize = dataSize;
+    m_tsne.m_outputDimensions = outputDimensions;
+    m_tsne.m_result.initialize(dataSize, outputDimensions);
+    auto it = m_tsne.m_result.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            *(it++) = value;
+        }
+    }
+
+    std::ostringstream result;
+    EXPECT_NO_THROW(m_tsne.saveToStream(result));
+    auto in = std::istringstream(result.str());
+
+    double d;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            in >> d;
+            EXPECT_EQ(value, d);
+            in.seekg(1, std::ios_base::cur);
+        }
+    }
 }
 
 TEST_F(TsneDeepTest, SaveToCout)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto outputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    m_tsne.m_dataSize = dataSize;
+    m_tsne.m_outputDimensions = outputDimensions;
+    m_tsne.m_result.initialize(dataSize, outputDimensions);
+    auto it = m_tsne.m_result.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            *(it++) = value;
+        }
+    }
+
+    std::ostringstream result;
+    auto coutBuf = std::cout.rdbuf();
+    std::cout.rdbuf(result.rdbuf());
+    EXPECT_NO_THROW(m_tsne.saveToCout());
+    auto in = std::istringstream(result.str());
+    std::cout.rdbuf(coutBuf);
+
+    double d;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            in >> d;
+            EXPECT_EQ(value, d);
+            in.seekg(1, std::ios_base::cur);
+        }
+    }
 }
 
 TEST_F(TsneDeepTest, SaveCSV)
