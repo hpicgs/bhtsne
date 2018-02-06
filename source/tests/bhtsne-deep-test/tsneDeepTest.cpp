@@ -36,7 +36,7 @@ class PublicTSNE : public bhtsne::TSNE
     FRIEND_TEST(TsneDeepTest, RunExact);
     FRIEND_TEST(TsneDeepTest, SaveToStream);
     FRIEND_TEST(TsneDeepTest, SaveToCout);
-    FRIEND_TEST(TsneDeepTest, SaveToCout);
+    FRIEND_TEST(TsneDeepTest, SaveCSV);
     FRIEND_TEST(TsneDeepTest, SaveLegacy);
     FRIEND_TEST(TsneDeepTest, SaveSVG);
     FRIEND_TEST(TsneDeepTest, ZeroMean);
@@ -534,7 +534,41 @@ TEST_F(TsneDeepTest, SaveToCout)
 
 TEST_F(TsneDeepTest, SaveCSV)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto outputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    m_tsne.m_dataSize = dataSize;
+    m_tsne.m_outputDimensions = outputDimensions;
+    m_tsne.m_result.initialize(dataSize, outputDimensions);
+    auto it = m_tsne.m_result.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            *(it++) = value;
+        }
+    }
+
+    m_tsne.setOutputFile(m_tempFile);
+    EXPECT_NO_THROW(m_tsne.saveCSV());
+
+    std::ifstream result;
+    EXPECT_NO_THROW(result.open(m_tempFile + ".csv", std::ios::in | std::ios::beg));
+    EXPECT_TRUE(result.is_open());
+
+    double d;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            result >> d;
+            EXPECT_EQ(value, d);
+            result.seekg(1, std::ios_base::cur);
+        }
+    }
+
+    result.close();
+    EXPECT_EQ(0, remove((m_tempFile + ".csv").c_str()));
 }
 
 TEST_F(TsneDeepTest, SaveLegacy)
