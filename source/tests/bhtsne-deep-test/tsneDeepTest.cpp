@@ -11,6 +11,7 @@ class PublicTSNE : public bhtsne::TSNE
     FRIEND_TEST(TsneDeepTest, EvaluateErrorExact);
     FRIEND_TEST(TsneDeepTest, SymmetrizeMatrix);
     FRIEND_TEST(TsneDeepTest, GaussNumber);
+    FRIEND_TEST(TsneDeepTest, RandomSeed);
     FRIEND_TEST(TsneDeepTest, SetRandomSeed);
     FRIEND_TEST(TsneDeepTest, Perplexity);
     FRIEND_TEST(TsneDeepTest, SetPerplexity);
@@ -53,11 +54,28 @@ protected:
     }
 
     PublicTSNE m_tsne;
+    const static std::vector<unsigned int> s_testValuesInt;
+    const static std::vector<double> s_testValuesDouble;
+    const static std::vector<std::string> s_testValuesString;
+    const static std::vector<std::vector<double>> s_testDataSet;
 };
+
+const std::vector<unsigned int> TsneDeepTest::s_testValuesInt = std::vector<unsigned int>{ 1, 0, 42, 1337 };
+const std::vector<double> TsneDeepTest::s_testValuesDouble = std::vector<double>{ 1.0, 0.0, 4.2, 13.37 };
+const std::vector<std::string> TsneDeepTest::s_testValuesString = std::vector<std::string>{ "true", "false", "fourty-two", "leet" };
+const std::vector<std::vector<double>> TsneDeepTest::s_testDataSet = std::vector<std::vector<double>>{ { 1.0, 2.0, 3.0 },{ 4.0, 5.0, 6.0 } };
 
 TEST_F(TsneDeepTest, Constructor)
 {
-    FAIL();
+    auto tsne = bhtsne::TSNE();
+    EXPECT_EQ(50.0, tsne.perplexity());
+    EXPECT_EQ(0.2, tsne.gradientAccuracy());
+    EXPECT_EQ(1000, tsne.iterations());
+    EXPECT_EQ(2, tsne.outputDimensions());
+    EXPECT_EQ(0, tsne.inputDimensions());
+    EXPECT_EQ(0, tsne.dataSize());
+    EXPECT_LT(0, tsne.randomSeed());
+    EXPECT_EQ("result", tsne.outputFile());
 }
 
 TEST_F(TsneDeepTest, ComputeGradient)
@@ -93,80 +111,158 @@ TEST_F(TsneDeepTest, GaussNumber)
     ASSERT_DOUBLE_EQ(0.15606557998386178, m_tsne.gaussNumber());
 }
 
+TEST_F(TsneDeepTest, RandomSeed)
+{
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.m_seed = number;
+        EXPECT_EQ(number, m_tsne.randomSeed());
+    }
+}
+
 TEST_F(TsneDeepTest, SetRandomSeed)
 {
-    m_tsne.setRandomSeed(0);
-    ASSERT_EQ(2357136044, m_tsne.m_gen());
-    m_tsne.setRandomSeed(1);
-    ASSERT_EQ(1791095845, m_tsne.m_gen());
+    for(const auto & number : s_testValuesInt)
+    {
+        m_tsne.setRandomSeed(number);
+        ASSERT_EQ(number, m_tsne.m_seed);
+    }
 }
 
 TEST_F(TsneDeepTest, Perplexity)
 {
-    m_tsne.m_perplexity = 0;
-    ASSERT_EQ(0, m_tsne.perplexity());
-    m_tsne.m_perplexity = 1;
-    ASSERT_EQ(1, m_tsne.perplexity());
+    for (const auto & number : s_testValuesDouble)
+    {
+        m_tsne.m_perplexity = number;
+        EXPECT_EQ(number, m_tsne.perplexity());
+    }
 }
 
 TEST_F(TsneDeepTest, SetPerplexity)
 {
-    FAIL();
+    for (const auto & number : s_testValuesDouble)
+    {
+        m_tsne.setPerplexity(number);
+        EXPECT_EQ(number, m_tsne.m_perplexity);
+    }
 }
 
 TEST_F(TsneDeepTest, GradientAccuracy)
 {
-    FAIL();
+    for (const auto & number : s_testValuesDouble)
+    {
+        m_tsne.m_gradientAccuracy = number;
+        EXPECT_EQ(number, m_tsne.gradientAccuracy());
+    }
 }
 
 TEST_F(TsneDeepTest, SetGradientAccuracy)
 {
-    FAIL();
+    for (const auto & number : s_testValuesDouble)
+    {
+        m_tsne.setGradientAccuracy(number);
+        EXPECT_EQ(number, m_tsne.m_gradientAccuracy);
+    }
 }
 
 TEST_F(TsneDeepTest, Iterations)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.m_iterations = number;
+        EXPECT_EQ(number, m_tsne.iterations());
+    }
 }
 
 TEST_F(TsneDeepTest, SetIterations)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.setIterations(number);
+        EXPECT_EQ(number, m_tsne.m_iterations);
+    }
 }
 
 TEST_F(TsneDeepTest, OutputDimensions)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.m_outputDimensions = number;
+        EXPECT_EQ(number, m_tsne.outputDimensions());
+    }
 }
 
 TEST_F(TsneDeepTest, SetOutputDimensions)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.setOutputDimensions(number);
+        EXPECT_EQ(number, m_tsne.m_outputDimensions);
+    }
 }
 
 TEST_F(TsneDeepTest, InputDimensions)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.m_inputDimensions = number;
+        EXPECT_EQ(number, m_tsne.inputDimensions());
+    }
 }
 
 TEST_F(TsneDeepTest, DataSize)
 {
-    FAIL();
+    for (const auto & number : s_testValuesInt)
+    {
+        m_tsne.m_dataSize = number;
+        EXPECT_EQ(number, m_tsne.dataSize());
+    }
 }
 
 TEST_F(TsneDeepTest, OutputFile)
 {
-    FAIL();
+    for (const auto & text : s_testValuesString)
+    {
+        m_tsne.m_outputFile = text;
+        EXPECT_EQ(text, m_tsne.outputFile());
+    }
 }
 
 TEST_F(TsneDeepTest, SetOutputFile)
 {
-    FAIL();
+    for (const auto & number : s_testValuesString)
+    {
+        m_tsne.setOutputFile(number);
+        EXPECT_EQ(number, m_tsne.m_outputFile);
+    }
 }
 
 TEST_F(TsneDeepTest, LoadFromStream)
 {
-    FAIL();
+    std::ostringstream out;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            out << value << ',';
+        }
+        out.seekp(-1, std::ios_base::cur);
+        out << std::endl;
+    }
+
+    std::istringstream in(out.str());
+    EXPECT_TRUE(m_tsne.loadFromStream(in));
+    EXPECT_EQ(s_testDataSet.size(), m_tsne.dataSize());
+    EXPECT_EQ(s_testDataSet[0].size(), m_tsne.inputDimensions());
+
+    auto it = m_tsne.m_data.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            EXPECT_EQ(value, *(it++));
+        }
+    }
 }
 
 TEST_F(TsneDeepTest, LoadLegacy)
@@ -186,7 +282,36 @@ TEST_F(TsneDeepTest, LoadTSNE)
 
 TEST_F(TsneDeepTest, LoadCin)
 {
-    FAIL();
+    auto cinBuf = std::cin.rdbuf();
+    std::stringstream out;
+
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            out << value << ',';
+        }
+        out.seekp(-1, std::ios_base::cur);
+        out << std::endl;
+    }
+    out.seekp(0);
+
+    std::cin.rdbuf(out.rdbuf());
+
+    EXPECT_TRUE(m_tsne.loadCin());
+    EXPECT_EQ(s_testDataSet.size(), m_tsne.dataSize());
+    EXPECT_EQ(s_testDataSet[0].size(), m_tsne.inputDimensions());
+
+    auto it = m_tsne.m_data.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            EXPECT_EQ(value, *(it++));
+        }
+    }
+
+    std::cin.rdbuf(cinBuf);
 }
 
 TEST_F(TsneDeepTest, Run)
