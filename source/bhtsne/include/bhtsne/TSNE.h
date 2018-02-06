@@ -76,15 +76,6 @@ public:
 
     /**
     *  @brief
-    *    Set random seed
-    *
-    *  @param[in] seed
-    *    Random seed
-    */
-    void setRandomSeed(unsigned long seed);
-
-    /**
-    *  @brief
     *    Get perplexity
     *
     *  @return
@@ -204,6 +195,24 @@ public:
     *    The loading method (e.g. loadCSV()) deduces this value from the given dataset file.
     */
     unsigned int dataSize() const;
+
+    /**
+    *  @brief
+    *    Get random seed
+    *
+    *  @return
+    *    Random seed
+    */
+    unsigned long randomSeed() const;
+
+    /**
+    *  @brief
+    *    Set random seed
+    *
+    *  @param[in] seed
+    *    Random seed
+    */
+    void setRandomSeed(unsigned long seed);
 
     /**
     *  @brief
@@ -427,6 +436,7 @@ protected:
     unsigned int m_inputDimensions;    ///< dimensionality of the input; set during load
     unsigned int m_dataSize;           ///< size of data; set during load
 	Vector2D<double> m_data;           ///< loaded data
+    unsigned long m_seed;              ///< seed for random number generator
     std::mt19937 m_gen;                ///< random number generator
 
     // output
