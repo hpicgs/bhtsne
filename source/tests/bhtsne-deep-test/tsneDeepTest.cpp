@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-
+#include <fstream>
+#include <iostream>
 #include <bhtsne/tsne.h>
 
 class PublicTSNE : public bhtsne::TSNE
@@ -45,19 +46,58 @@ class PublicTSNE : public bhtsne::TSNE
     FRIEND_TEST(TsneDeepTest, ComputeGaussianPerplexity);
 };
 
+class BinaryWriter
+{
+public:
+    BinaryWriter() = default;
+    explicit BinaryWriter(std::ofstream * f)
+        : fileStream(f)
+    {
+    }
+
+    template <typename T>
+    auto& operator<<(const T & value)
+    {
+        fileStream->write(reinterpret_cast<const char *>(&value), sizeof(value));
+        return *this;
+    }
+
+private:
+    std::ofstream * fileStream;
+};
+
 class TsneDeepTest : public testing::Test
 {
 protected:
     TsneDeepTest()
         : m_tsne(PublicTSNE())
+        , m_tempFile(std::tmpnam(nullptr))
     {
     }
 
     PublicTSNE m_tsne;
+    std::string m_tempFile;
+    std::ofstream m_fileStream;
+    BinaryWriter m_writer;
     const static std::vector<unsigned int> s_testValuesInt;
     const static std::vector<double> s_testValuesDouble;
     const static std::vector<std::string> s_testValuesString;
     const static std::vector<std::vector<double>> s_testDataSet;
+
+    auto createTempfile()
+    {
+        m_fileStream.open(m_tempFile, std::ios::out | std::ios::binary | std::ios::trunc);
+        m_writer = BinaryWriter(&m_fileStream);
+    }
+
+    auto removeTempfile()
+    {
+        if (m_fileStream.is_open())
+        {
+            m_fileStream.close();
+        }
+        EXPECT_EQ(0, remove(m_tempFile.c_str()));
+    }
 };
 
 const std::vector<unsigned int> TsneDeepTest::s_testValuesInt = std::vector<unsigned int>{ 1, 0, 42, 1337 };
@@ -267,7 +307,46 @@ TEST_F(TsneDeepTest, LoadFromStream)
 
 TEST_F(TsneDeepTest, LoadLegacy)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto inputDimensions = static_cast<int>(s_testDataSet[0].size());
+    auto gradientAccuracy = 0.5;
+    auto perplexity = 25.0;
+    auto outputDimensions = 1;
+    auto iterations = 100;
+    auto randomSeed = 42;
+
+    createTempfile();
+    m_writer << dataSize << inputDimensions << gradientAccuracy << perplexity << outputDimensions << iterations;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            m_writer << value;
+        }
+    }
+    m_writer << randomSeed;
+    m_fileStream.flush();
+    m_fileStream.close();
+
+    EXPECT_TRUE(m_tsne.loadLegacy(m_tempFile));
+    EXPECT_EQ(dataSize, m_tsne.m_dataSize);
+    EXPECT_EQ(inputDimensions, m_tsne.m_inputDimensions);
+    EXPECT_EQ(gradientAccuracy, m_tsne.m_gradientAccuracy);
+    EXPECT_EQ(perplexity, m_tsne.m_perplexity);
+    EXPECT_EQ(outputDimensions, m_tsne.m_outputDimensions);
+    EXPECT_EQ(iterations, m_tsne.m_iterations);
+    EXPECT_EQ(randomSeed, m_tsne.m_seed);
+
+    auto it = m_tsne.m_data.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            EXPECT_EQ(value, *(it++));
+        }
+    }
+
+    removeTempfile();
 }
 
 TEST_F(TsneDeepTest, LoadCSV)
