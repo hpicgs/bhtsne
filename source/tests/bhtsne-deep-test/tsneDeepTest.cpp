@@ -351,12 +351,67 @@ TEST_F(TsneDeepTest, LoadLegacy)
 
 TEST_F(TsneDeepTest, LoadCSV)
 {
-    FAIL();
+    createTempfile();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            m_fileStream << value << ',';
+        }
+        m_fileStream.seekp(-1, std::ios_base::cur);
+        m_fileStream << std::endl;
+    }
+
+    m_fileStream.flush();
+    m_fileStream.close();
+
+    EXPECT_TRUE(m_tsne.loadCSV(m_tempFile));
+    EXPECT_EQ(s_testDataSet.size(), m_tsne.m_dataSize);
+    EXPECT_EQ(s_testDataSet[0].size(), m_tsne.m_inputDimensions);
+    
+    auto it = m_tsne.m_data.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            EXPECT_EQ(value, *(it++));
+        }
+    }
+
+    removeTempfile();
 }
 
 TEST_F(TsneDeepTest, LoadTSNE)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto inputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    createTempfile();
+    m_writer << dataSize << inputDimensions;
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            m_writer << value;
+        }
+    }
+    m_fileStream.flush();
+    m_fileStream.close();
+
+    EXPECT_TRUE(m_tsne.loadTSNE(m_tempFile));
+    EXPECT_EQ(dataSize, m_tsne.m_dataSize);
+    EXPECT_EQ(inputDimensions, m_tsne.m_inputDimensions);
+
+    auto it = m_tsne.m_data.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            EXPECT_EQ(value, *(it++));
+        }
+    }
+
+    removeTempfile();
 }
 
 TEST_F(TsneDeepTest, LoadCin)
