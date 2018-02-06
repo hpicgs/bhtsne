@@ -330,7 +330,7 @@ void TSNE::symmetrizeMatrix(SparseMatrix & similarities)
 }
 
 // with mean zero and standard deviation one
-double bhtsne::TSNE::gaussNumber()
+double TSNE::gaussNumber()
 {
     // Knuth, Art of Computer Programming vol v2, Section 3.4.1, Algorithm P (p.117)
 
