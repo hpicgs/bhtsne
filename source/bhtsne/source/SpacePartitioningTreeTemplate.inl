@@ -187,7 +187,7 @@ void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, dou
     }
 
     // Check whether we can use this node as a "summary"
-    if(m_isLeaf || maxRadius / std::sqrt(sumOfSquaredDistances) < theta)
+    if(m_isLeaf || maxRadius * maxRadius < theta * theta * sumOfSquaredDistances)
     {
         // Compute and add t-SNE force between point and current node
         auto inverseDistSum = 1.0 / (1.0 + sumOfSquaredDistances);
