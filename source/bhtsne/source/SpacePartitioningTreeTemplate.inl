@@ -302,5 +302,41 @@ void SpacePartitioningTree<2>::computeNonEdgeForces(unsigned int pointIndex, dou
     }
 }
 
+template<>
+void SpacePartitioningTree<2>::computeEdgeForces(const std::vector<unsigned int> & rows,
+    const std::vector<unsigned int> & columns,
+    const std::vector<double> & values,
+    Vector2D<double>& forces)
+{
+    //auto forces = Vector2D<double>(m_data.height(), 2, 0.0);
+    // Loop over all edges in the graph
+    auto distances = std::array<double, 2>();
+    for (unsigned int n = 0; n < forces.height(); ++n)
+    {
+        for (auto i = rows[n]; i < rows[n + 1]; ++i)
+        {
+            // Compute pairwise distance and Q-value
+            double buff[2];
+            auto point1 = _mm_loadu_pd(m_data[n]);
+            auto point2 = _mm_loadu_pd(m_data[columns[i]]);
+            auto distance = _mm_sub_pd(point1, point2);
+            auto square = _mm_mul_pd(distance, distance);
+            _mm_storeu_pd(buff, square);
+
+            double sumOfSquaredDistances = 1.0 + buff[0] + buff[1];
+            double force = values[i] / sumOfSquaredDistances;
+
+            //load modify and store forces
+            auto oldForce = _mm_loadu_pd(forces[n]);
+            auto forceModifier = _mm_set_pd(force, force);
+            // auto newForce = _mm_fmadd_pd(forceModifier, distance, oldForce); // fmx alternative
+            auto forceChange = _mm_mul_pd(forceModifier, distance);
+            auto newForce = _mm_add_pd(oldForce, forceChange);
+            _mm_storeu_pd(forces[n], newForce);
+        }
+    }
+    //return forces;
+}
+
 
 } // namespace bhtsne

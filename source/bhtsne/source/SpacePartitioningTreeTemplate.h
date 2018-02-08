@@ -34,7 +34,9 @@
 
 #include <array>
 #include <memory>
+
 #include <bhtsne/Vector2D.h>
+
 
 namespace bhtsne {
 

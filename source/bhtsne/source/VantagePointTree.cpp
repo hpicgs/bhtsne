@@ -14,6 +14,7 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
 {
     assert(a.dimensions == b.dimensions);
     double squaredDistance = 0.0;
+    //#pragma omp simd reduction(+:squaredDistance)
     for (size_t d = 0; d < a.dimensions; ++d)
     {
         double difference = a.data[d] - b.data[d];

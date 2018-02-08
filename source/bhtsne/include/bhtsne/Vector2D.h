@@ -25,8 +25,8 @@ public:
     typename std::vector<T>::iterator begin();
     typename std::vector<T>::iterator end();
 
-    T * operator[](size_t i);
-    const T * operator[](size_t i) const;
+    inline T * operator[](size_t i);
+    inline const T * operator[](size_t i) const;
     T & at(size_t i, size_t j);
 
 protected:
