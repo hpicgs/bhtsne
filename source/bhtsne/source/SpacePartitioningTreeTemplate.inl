@@ -282,6 +282,7 @@ void SpacePartitioningTree<2>::computeNonEdgeForces(unsigned int pointIndex, dou
         //load modify and store forces
         auto oldForce = _mm_loadu_pd(forces);
         auto forceModifier = _mm_set_pd(force, force);
+        // auto newForce = _mm_fmadd_pd(forceModifier, distance, oldForce); // fmx alternative
         auto forceChange = _mm_mul_pd(forceModifier, distance);
         auto newForce = _mm_add_pd(oldForce, forceChange);
         _mm_storeu_pd(forces, newForce);
