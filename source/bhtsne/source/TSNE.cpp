@@ -1083,7 +1083,7 @@ Vector2D<double> TSNE::computeSquaredEuclideanDistance(const Vector2D<double> & 
     return distances;
 }
 
-void TSNE::computeGaussianPerplexity(SparseMatrix & similarities)
+void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
 {
     assert(m_data.height() == m_dataSize);
     assert(m_data.width() == m_inputDimensions);

@@ -183,7 +183,14 @@ TEST_F(TsneDeepTest, SetPerplexity)
     for (const auto & number : s_testValuesDouble)
     {
         m_tsne.setPerplexity(number);
-        EXPECT_EQ(number, m_tsne.m_perplexity);
+		if (number >= 2.0)
+		{
+			EXPECT_EQ(number, m_tsne.m_perplexity);
+		}
+		else 
+		{
+			EXPECT_EQ(2.0, m_tsne.m_perplexity);
+		}
     }
 }
 
@@ -650,12 +657,36 @@ TEST_F(TsneDeepTest, SaveSVG)
 
 TEST_F(TsneDeepTest, ZeroMean)
 {
-    FAIL();
+	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
+	auto expectedResults = std::vector<std::vector<double>>{ { -1.5, -1.5, -1.5 },{ 1.5, 1.5, 1.5 } };
+
+	m_tsne.zeroMean(testSet);
+
+	auto it = testSet.begin();
+	for (auto sample : expectedResults)
+	{
+		for (auto value : sample)
+		{
+			EXPECT_DOUBLE_EQ(value, *(it++));
+		}
+	}
 }
 
 TEST_F(TsneDeepTest, Normalize)
 {
-    FAIL();
+	auto testSet =  bhtsne::Vector2D<double>(s_testDataSet);
+	auto expectedResults = std::vector<std::vector<double>>{ { 1.0/6.0, 1.0/3.0, 0.5}, { 2.0/3.0, 5.0/6.0, 1.0 } };
+
+	m_tsne.normalize(testSet);
+
+	auto it = testSet.begin();
+	for (auto sample : expectedResults)
+	{
+		for (auto value : sample)
+		{
+			EXPECT_DOUBLE_EQ(value, *(it++));
+		}
+	}
 }
 
 TEST_F(TsneDeepTest, ComputeGaussianPerplexityExact)
