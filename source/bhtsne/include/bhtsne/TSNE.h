@@ -422,7 +422,7 @@ protected:
     template<unsigned int D>
     double evaluateError(SparseMatrix & similarities);
     double evaluateErrorExact(const Vector2D<double> & Perplexity);
-    void computeGaussianPerplexity(SparseMatrix & similarities);
+    void computeGaussianPerplexity(SparseMatrix & similarities) const;
     Vector2D<double> computeGaussianPerplexityExact();
 
     // params
