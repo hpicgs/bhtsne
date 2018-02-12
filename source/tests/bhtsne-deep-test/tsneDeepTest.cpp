@@ -578,7 +578,74 @@ TEST_F(TsneDeepTest, SaveLegacy)
 
 TEST_F(TsneDeepTest, SaveSVG)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto outputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    m_tsne.m_dataSize = dataSize;
+    m_tsne.m_outputDimensions = outputDimensions;
+    m_tsne.m_result.initialize(dataSize, outputDimensions);
+    auto it = m_tsne.m_result.begin();
+    for (auto sample : s_testDataSet)
+    {
+        for (auto value : sample)
+        {
+            *(it++) = value;
+        }
+    }
+
+    m_tsne.setOutputFile(m_tempFile);
+    EXPECT_NO_THROW(m_tsne.saveSVG());
+
+    std::ifstream result;
+    EXPECT_NO_THROW(result.open(m_tempFile + ".svg", std::ios::in | std::ios::beg));
+    EXPECT_TRUE(result.is_open());
+
+    // ignore xml header
+    result.ignore(std::numeric_limits<std::streamsize>::max(), '>');
+    EXPECT_FALSE(result.eof());
+    // ignore svg header
+    result.ignore(std::numeric_limits<std::streamsize>::max(), '>');
+    EXPECT_FALSE(result.eof());
+
+    double d;
+    std::string circle = "circle ";
+    std::string cx = "cx='";
+    std::string close = "' ";
+    std::string cy = "cy='";
+
+    auto checkFunc = [&result](std::string tag)
+    {
+        std::string s;
+        s.resize(tag.length());
+        result.read(&s[0], s.length());
+        EXPECT_FALSE(result.eof());
+        EXPECT_FALSE(result.fail());
+        EXPECT_EQ(tag, s);
+    };
+
+    for (auto sample : s_testDataSet)
+    {
+        // ignore until circle opening tag
+        result.ignore(std::numeric_limits<std::streamsize>::max(), '<');
+        EXPECT_FALSE(result.eof());
+
+        checkFunc(circle);
+        checkFunc(cx);
+
+        result >> d;
+        EXPECT_EQ(sample[0], d);
+
+        checkFunc(close);
+        checkFunc(cy);
+
+        result >> d;
+        EXPECT_EQ(sample[1], d);
+
+        checkFunc(close);
+    }
+
+    result.close();
+    EXPECT_EQ(0, remove((m_tempFile + ".svg").c_str()));
 }
 
 TEST_F(TsneDeepTest, ZeroMean)
