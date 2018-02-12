@@ -47,7 +47,6 @@ static inline double sign(double x) { return (x == .0 ? .0 : (x < .0 ? -1.0 : 1.
 
 namespace bhtsne
 {
-
 /**
 *  @brief
 *    Representation of the Barnes-Hut approximation for
@@ -443,6 +442,11 @@ protected:
     std::string  m_outputFile;         ///< path and basename used to create output files
 	Vector2D<double> m_result;         ///< computation results
 
+    // only for testing
+    virtual bool TESTING() const
+    {
+        return false;
+    }
 
 
     //helper
