@@ -556,7 +556,45 @@ TEST_F(TsneDeepTest, SaveCSV)
 
 TEST_F(TsneDeepTest, SaveLegacy)
 {
-    FAIL();
+    auto dataSize = static_cast<int>(s_testDataSet.size());
+    auto outputDimensions = static_cast<int>(s_testDataSet[0].size());
+
+    m_tsne.m_dataSize = dataSize;
+    m_tsne.m_outputDimensions = outputDimensions;
+    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+
+    m_tsne.setOutputFile(m_tempFile);
+    EXPECT_NO_THROW(m_tsne.saveLegacy());
+
+    std::ifstream result;
+    EXPECT_NO_THROW(result.open(m_tempFile + ".dat", std::ios::in | std::ios::binary));
+    EXPECT_TRUE(result.is_open());
+
+    int readDataSize;
+    int readOutputDimensions;
+    auto readData = bhtsne::Vector2D<double>(dataSize, outputDimensions);
+    auto readLandmarks = std::vector<int>(dataSize);
+    auto readCosts = std::vector<double>(dataSize);
+    result.read(reinterpret_cast<char*>(&readDataSize), sizeof(dataSize));
+    result.read(reinterpret_cast<char*>(&readOutputDimensions), sizeof(outputDimensions));
+    result.read(reinterpret_cast<char*>(readData[0]), readData.size() * sizeof(double));
+    result.read(reinterpret_cast<char*>(readLandmarks.data()), readLandmarks.size() * sizeof(int));
+    result.read(reinterpret_cast<char*>(readCosts.data()), readCosts.size() * sizeof(double));
+    EXPECT_EQ(dataSize, readDataSize);
+    EXPECT_EQ(outputDimensions, readOutputDimensions);
+
+    for (auto i = 0; i < dataSize; ++i)
+    {
+        for (auto j = 0; j < outputDimensions; ++j)
+        {
+            EXPECT_EQ(s_testDataSet[i][j], readData[i][j]);
+        }
+        EXPECT_EQ(i, readLandmarks[i]);
+        EXPECT_EQ(0, readCosts[i]);
+    }
+
+    result.close();
+    remove((m_tempFile + ".dat").c_str());
 }
 
 TEST_F(TsneDeepTest, SaveSVG)
