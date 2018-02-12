@@ -590,7 +590,19 @@ TEST_F(TsneDeepTest, SaveSVG)
 
 TEST_F(TsneDeepTest, ZeroMean)
 {
-    FAIL();
+	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
+	auto expectedResults = std::vector<std::vector<double>>{ { -1.5, -1.5, -1.5 },{ 1.5, 1.5, 1.5 } };
+
+	m_tsne.zeroMean(testSet);
+
+	auto it = testSet.begin();
+	for (auto sample : expectedResults)
+	{
+		for (auto value : sample)
+		{
+			EXPECT_DOUBLE_EQ(value, *(it++));
+		}
+	}
 }
 
 TEST_F(TsneDeepTest, Normalize)
