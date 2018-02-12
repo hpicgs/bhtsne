@@ -477,15 +477,7 @@ TEST_F(TsneDeepTest, SaveToStream)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result.initialize(dataSize, outputDimensions);
-    auto it = m_tsne.m_result.begin();
-    for (auto sample : s_testDataSet)
-    {
-        for (auto value : sample)
-        {
-            *(it++) = value;
-        }
-    }
+    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
 
     std::ostringstream result;
     EXPECT_NO_THROW(m_tsne.saveToStream(result));
@@ -510,15 +502,7 @@ TEST_F(TsneDeepTest, SaveToCout)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result.initialize(dataSize, outputDimensions);
-    auto it = m_tsne.m_result.begin();
-    for (auto sample : s_testDataSet)
-    {
-        for (auto value : sample)
-        {
-            *(it++) = value;
-        }
-    }
+    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
 
     std::ostringstream result;
     auto coutBuf = std::cout.rdbuf();
@@ -546,15 +530,7 @@ TEST_F(TsneDeepTest, SaveCSV)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result.initialize(dataSize, outputDimensions);
-    auto it = m_tsne.m_result.begin();
-    for (auto sample : s_testDataSet)
-    {
-        for (auto value : sample)
-        {
-            *(it++) = value;
-        }
-    }
+    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
 
     m_tsne.setOutputFile(m_tempFile);
     EXPECT_NO_THROW(m_tsne.saveCSV());
@@ -590,15 +566,7 @@ TEST_F(TsneDeepTest, SaveSVG)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result.initialize(dataSize, outputDimensions);
-    auto it = m_tsne.m_result.begin();
-    for (auto sample : s_testDataSet)
-    {
-        for (auto value : sample)
-        {
-            *(it++) = value;
-        }
-    }
+    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
 
     m_tsne.setOutputFile(m_tempFile);
     EXPECT_NO_THROW(m_tsne.saveSVG());
