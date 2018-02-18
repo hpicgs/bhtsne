@@ -63,7 +63,7 @@ TSNE::TSNE()
     , m_outputDimensions(2)
     , m_inputDimensions(0)
     , m_dataSize(0)
-    , m_gen(static_cast<unsigned long>(std::chrono::high_resolution_clock::now().time_since_epoch().count()))
+    , m_seed(static_cast<unsigned long>(std::chrono::high_resolution_clock::now().time_since_epoch().count()))
     , m_outputFile("result")
 {
 }
@@ -144,7 +144,6 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
 
     return gradients;
 }
-
 
 // Evaluate t-SNE cost function (exactly)
 double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
@@ -323,7 +322,7 @@ void TSNE::symmetrizeMatrix(SparseMatrix & similarities)
 }
 
 // with mean zero and standard deviation one
-double bhtsne::TSNE::gaussNumber()
+double TSNE::gaussNumber()
 {
     // Knuth, Art of Computer Programming vol v2, Section 3.4.1, Algorithm P (p.117)
 
@@ -342,12 +341,6 @@ double bhtsne::TSNE::gaussNumber()
     //same can be done for X2
 
     return X1;
-}
-
-void TSNE::setRandomSeed(unsigned long seed)
-{
-    std::cout << "Using random seed: " << seed << std::endl;
-    m_gen.seed(seed);
 }
 
 double TSNE::perplexity() const
@@ -403,6 +396,16 @@ unsigned int TSNE::inputDimensions() const
 unsigned int TSNE::dataSize() const
 {
 	return m_dataSize;
+}
+
+unsigned long TSNE::randomSeed() const
+{
+    return m_seed;
+}
+
+void TSNE::setRandomSeed(unsigned long seed)
+{
+    m_seed = seed;
 }
 
 std::string TSNE::outputFile() const
@@ -555,6 +558,9 @@ void TSNE::run()
         << "\nperplexity " << m_perplexity
         << "\ngradient accuracy " << m_gradientAccuracy
         << std::endl;
+
+    std::cout << "Using random seed: " << m_seed << std::endl;
+    m_gen.seed(m_seed);
 
     m_result.initialize(m_dataSize, m_outputDimensions);
     if (m_gradientAccuracy == 0.0)
@@ -1077,7 +1083,7 @@ Vector2D<double> TSNE::computeSquaredEuclideanDistance(const Vector2D<double> & 
     return distances;
 }
 
-void TSNE::computeGaussianPerplexity(SparseMatrix & similarities)
+void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
 {
     assert(m_data.height() == m_dataSize);
     assert(m_data.width() == m_inputDimensions);
