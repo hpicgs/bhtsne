@@ -7,6 +7,7 @@
 #include <initializer_list>
 
 #include <bhtsne/TSNE.h>
+#include <omp.h>
 #include "../../bhtsne/source/SpacePartitioningTree.cpp"
 
 class PublicTSNE : public bhtsne::TSNE
@@ -47,13 +48,9 @@ public:
         return TSNE::gaussNumber();
     }
 
-    void zeroMean(bhtsne::Vector2D<double>& data) {
-        TSNE::zeroMean(data);
-    }
-
-    bool TESTING() const override
+    void zeroMean(bhtsne::Vector2D<double> & data)
     {
-        return true;
+        TSNE::zeroMean(data);
     }
 };
 
@@ -83,7 +80,15 @@ protected:
     TsneTest()
         : m_tsne(PublicTSNE())
         , m_tempFile(std::tmpnam(nullptr))
+        , m_defaultNumberOfThreads(omp_get_max_threads())
     {
+        omp_set_num_threads(1);
+        assert(omp_get_max_threads() == 1);
+    }
+
+    ~TsneTest()
+    {
+        omp_set_num_threads(m_defaultNumberOfThreads);
     }
 
     auto createTempfile()
@@ -105,6 +110,7 @@ protected:
     std::string m_tempFile;
     std::ofstream m_fileStream;
     BinaryWriter m_writer;
+    int m_defaultNumberOfThreads;
 };
 
 TEST_F(TsneTest, DefaultValues)

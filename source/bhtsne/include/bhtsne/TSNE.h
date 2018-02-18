@@ -432,13 +432,6 @@ protected:
     std::string  m_outputFile;         ///< path and basename used to create output files
 	Vector2D<double> m_result;         ///< computation results
 
-    // only for testing
-    virtual bool TESTING() const
-    {
-        return false;
-    }
-
-
     //helper
     static Vector2D<double> computeSquaredEuclideanDistance(const Vector2D<double> & points);
     void symmetrizeMatrix(SparseMatrix & similarities);
