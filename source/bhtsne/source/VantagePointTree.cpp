@@ -2,7 +2,8 @@
 
 #include <cassert>
 
-//using namespace bhtsne;
+#include "immintrin.h"
+
 
 DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, const double * x)
 	: dimensions(dimensions)
@@ -13,13 +14,36 @@ DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, co
 double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint & b)
 {
     assert(a.dimensions == b.dimensions);
+
+    /* 
+    // this is the desired impementation but windwos supports no omp simd with its omp 2.0
     double squaredDistance = 0.0;
-    //#pragma omp simd reduction(+:squaredDistance)
-    for (size_t d = 0; d < a.dimensions; ++d)
+    #pragma omp simd reduction(+:squaredDistance)
+    for (int i = 0; i < a.dimensions; ++i)
     {
-        double difference = a.data[d] - b.data[d];
+        double difference = a.data[i] - b.data[i];
         squaredDistance += difference * difference;
     }
+    return sqrt(squaredDistance);
+    */
+
+    auto squared_accum = _mm256_set1_pd(0.0);
+    int i = 0;
+    for (; i < a.dimensions-3; i += 4)
+    {
+        auto diff = _mm256_sub_pd(_mm256_loadu_pd(a.data.data() + i), _mm256_loadu_pd(b.data.data() + i));
+        squared_accum = _mm256_add_pd(squared_accum, _mm256_mul_pd(diff, diff));
+    }
+    alignas(32) double buf[4];
+    _mm256_store_pd(buf, squared_accum);
+    double squaredDistance = buf[0] + buf[1] + buf[2] + buf[3];
+
+    for (; i < a.dimensions; ++i)
+    {
+        double difference = a.data[i] - b.data[i];
+        squaredDistance += difference * difference;
+    }
+    
     return sqrt(squaredDistance);
 }
 

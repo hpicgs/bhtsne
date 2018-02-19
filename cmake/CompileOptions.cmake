@@ -131,7 +131,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
             -pthread
         >
 
-        # -mavx
+		-mavx
+		-mavx2
     )
 endif ()
 
