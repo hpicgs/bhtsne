@@ -4,7 +4,7 @@
 
 //using namespace bhtsne;
 
-DataPoint::DataPoint(unsigned int dimensions, unsigned int index, double * x)
+DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, const double * x)
 	: dimensions(dimensions)
 	, index(index)
 	, data(x, x + dimensions)

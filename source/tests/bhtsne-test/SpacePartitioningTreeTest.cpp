@@ -1,4 +1,5 @@
 #include <gmock/gmock.h>
+#include <omp.h>
 #include "../../bhtsne/source/SpacePartitioningTreeTemplate.h"
 
 using namespace bhtsne;
@@ -30,32 +31,36 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
     const double gradientAccuracy = 0.2;
 
     auto tree = SpacePartitioningTree<outputDimensions>(result);
-    auto neg_f =     Vector2D<double>(dataSize, outputDimensions, 0.0);
-    auto omp_neg_f = Vector2D<double>(dataSize, outputDimensions, 0.0);
+    auto negativeForces = Vector2D<double>(dataSize, outputDimensions, 0.0);
+    auto omp_negativeForces = Vector2D<double>(dataSize, outputDimensions, 0.0);
 
-    double sum_Q =     0.0;
-    double omp_sum_Q = 0.0;
+    double sumQ = 0.0;
+    double omp_sumQ = 0.0;
 
     // serial
-    for (unsigned int n = 0; n < dataSize; ++n)
-    {
-        tree.computeNonEdgeForces(n, gradientAccuracy, neg_f[n], sum_Q);
+    // TODO rename to negativeForces everywhere
+    for (unsigned int n = 0; n < dataSize; ++n) {
+        tree.computeNonEdgeForces(n, gradientAccuracy, negativeForces[n], sumQ);
     }
 
-    // parallel; omp on windows (2.0) does only support signed loop variables, should be unsigned
-    #pragma omp parallel for reduction(+:omp_sum_Q)
+    // parallel
+    int executedInParallel = 0;
+    // omp version on windows (2.0) does only support signed loop variables, should be unsigned
+    #pragma omp parallel for reduction(+:omp_sumQ) reduction(+:executedInParallel)
     for (int n = 0; n < dataSize; ++n)
     {
-        tree.computeNonEdgeForces(n, gradientAccuracy, omp_neg_f[n], omp_sum_Q);
+        executedInParallel = omp_in_parallel() ? 1 : 0;
+        tree.computeNonEdgeForces(n, gradientAccuracy, omp_negativeForces[n], omp_sumQ);
     }
+    ASSERT_NE(executedInParallel, 0);
 
-    ASSERT_DOUBLE_EQ(sum_Q, omp_sum_Q);
+    ASSERT_DOUBLE_EQ(sumQ, omp_sumQ);
 
-    for (unsigned int i = 0; i < neg_f.height(); ++i)
+    for (unsigned int i = 0; i < negativeForces.height(); ++i)
     {
-        for (unsigned int j = 0; j < neg_f.width(); ++j)
+        for (unsigned int j = 0; j < negativeForces.width(); ++j)
         {
-            ASSERT_DOUBLE_EQ(neg_f[i][j], omp_neg_f[i][j]);
+            ASSERT_DOUBLE_EQ(negativeForces[i][j], omp_negativeForces[i][j]);
         }
     }
 }

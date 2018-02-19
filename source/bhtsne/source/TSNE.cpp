@@ -63,7 +63,7 @@ TSNE::TSNE()
     , m_outputDimensions(2)
     , m_inputDimensions(0)
     , m_dataSize(0)
-    , m_gen(static_cast<unsigned long>(std::chrono::high_resolution_clock::now().time_since_epoch().count()))
+    , m_seed(static_cast<unsigned long>(std::chrono::high_resolution_clock::now().time_since_epoch().count()))
     , m_outputFile("result")
 {
 }
@@ -76,16 +76,16 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
     auto tree = SpacePartitioningTree<D>(m_result);
 
     // Compute all terms required for t-SNE gradient
-    auto pos_f = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
-    tree.computeEdgeForces(similarities.rows, similarities.columns, similarities.values, pos_f);
+    auto positiveForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
+    tree.computeEdgeForces(similarities.rows, similarities.columns, similarities.values, positiveForces);
 
-    auto neg_f = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
-    double sum_Q = 0.0;
+    auto negativeForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
+    double sumQ = 0.0;
     // omp version on windows (2.0) does only support signed loop variables, should be unsigned
-    #pragma omp parallel for reduction(+:sum_Q) if(!TESTING())
+    #pragma omp parallel for reduction(+:sumQ)
     for (int n = 0; n < m_dataSize; ++n)
     {
-        tree.computeNonEdgeForces(n, m_gradientAccuracy, neg_f[n], sum_Q);
+        tree.computeNonEdgeForces(n, m_gradientAccuracy, negativeForces[n], sumQ);
     }
 
     auto result = Vector2D<double>(m_dataSize, m_outputDimensions);
@@ -94,7 +94,7 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
     {
         for (unsigned int j = 0; j < m_outputDimensions; ++j)
         {
-            result[i][j] = pos_f[i][j] - (neg_f[i][j] / sum_Q);
+            result[i][j] = positiveForces[i][j] - (negativeForces[i][j] / sumQ);
         }
     }
     return result;
@@ -113,14 +113,14 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
     // Compute Q-matrix and normalization sum
     // Q = similarities of low dimensional output data
     auto Q = Vector2D<double>(m_dataSize, m_dataSize);
-    double sum_Q = 0.0;
+    double sumQ = 0.0;
     for (unsigned int n = 0; n < m_dataSize; ++n)
     {
         for (unsigned int m = n + 1; m < m_dataSize; ++m)
         {
             Q[n][m] = 1.0 / (1.0 + distances[n][m]);
             Q[m][n] = Q[n][m];
-            sum_Q += 2 * Q[n][m];
+            sumQ += 2 * Q[n][m];
         }
     }
 
@@ -134,7 +134,7 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
                 continue;
             }
 
-            double mult = (Perplexity[n][m] - (Q[n][m] / sum_Q)) * Q[n][m];
+            double mult = (Perplexity[n][m] - (Q[n][m] / sumQ)) * Q[n][m];
             for (unsigned int d = 0; d < m_outputDimensions; ++d)
             {
                 gradients[n][d] += (m_result[n][d] - m_result[m][d]) * mult;
@@ -144,7 +144,6 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
 
     return gradients;
 }
-
 
 // Evaluate t-SNE cost function (exactly)
 double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
@@ -160,21 +159,21 @@ double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
 
     // Compute Q-matrix and normalization sum
     //TODO init to 0 (or evaluate consequences)
-    double sum_Q = std::numeric_limits<double>::min();
+    double sumQ = std::numeric_limits<double>::min();
     for (unsigned int n = 0; n < m_dataSize; ++n)
     {
         for (unsigned int m = n + 1; m < m_dataSize; ++m)
         {
             Q[n][m] = 1.0 / (1.0 + distances[n][m]);
             Q[m][n] = Q[n][m];
-            sum_Q += 2 * Q[n][m];
+            sumQ += 2 * Q[n][m];
         }
     }
 
     //TODO use vector normalization method
     for (auto & each : Q)
     {
-        each /= sum_Q;
+        each /= sumQ;
     }
 
     // Sum t-SNE error
@@ -199,10 +198,10 @@ double TSNE::evaluateError(SparseMatrix & similarities)
     // Get estimate of normalization term
     auto tree = SpacePartitioningTree<D>(m_result);
     auto buff = std::vector<double>(m_outputDimensions, 0.0);
-    double sum_Q = 0.0;
+    double sumQ = 0.0;
     for (unsigned int i = 0; i < m_dataSize; ++i)
     {
-        tree.computeNonEdgeForces(i, m_gradientAccuracy, buff.data(), sum_Q);
+        tree.computeNonEdgeForces(i, m_gradientAccuracy, buff.data(), sumQ);
     }
 
     // Loop over all edges to compute t-SNE error
@@ -218,7 +217,7 @@ double TSNE::evaluateError(SparseMatrix & similarities)
                 Q += buff[d] * buff[d];
             }
 
-            Q = (1.0 / (1.0 + Q)) / sum_Q;
+            Q = (1.0 / (1.0 + Q)) / sumQ;
             error += similarities.values[i] * log((similarities.values[i] + std::numeric_limits<float>::min())
                                                   / (Q + std::numeric_limits<float>::min()));
         }
@@ -323,7 +322,7 @@ void TSNE::symmetrizeMatrix(SparseMatrix & similarities)
 }
 
 // with mean zero and standard deviation one
-double bhtsne::TSNE::gaussNumber()
+double TSNE::gaussNumber()
 {
     // Knuth, Art of Computer Programming vol v2, Section 3.4.1, Algorithm P (p.117)
 
@@ -342,12 +341,6 @@ double bhtsne::TSNE::gaussNumber()
     //same can be done for X2
 
     return X1;
-}
-
-void TSNE::setRandomSeed(unsigned long seed)
-{
-    std::cout << "Using random seed: " << seed << std::endl;
-    m_gen.seed(seed);
 }
 
 double TSNE::perplexity() const
@@ -403,6 +396,16 @@ unsigned int TSNE::inputDimensions() const
 unsigned int TSNE::dataSize() const
 {
 	return m_dataSize;
+}
+
+unsigned long TSNE::randomSeed() const
+{
+    return m_seed;
+}
+
+void TSNE::setRandomSeed(unsigned long seed)
+{
+    m_seed = seed;
 }
 
 std::string TSNE::outputFile() const
@@ -555,6 +558,9 @@ void TSNE::run()
         << "\nperplexity " << m_perplexity
         << "\ngradient accuracy " << m_gradientAccuracy
         << std::endl;
+
+    std::cout << "Using random seed: " << m_seed << std::endl;
+    m_gen.seed(m_seed);
 
     m_result.initialize(m_dataSize, m_outputDimensions);
     if (m_gradientAccuracy == 0.0)
@@ -1077,7 +1083,7 @@ Vector2D<double> TSNE::computeSquaredEuclideanDistance(const Vector2D<double> & 
     return distances;
 }
 
-void TSNE::computeGaussianPerplexity(SparseMatrix & similarities)
+void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
 {
     assert(m_data.height() == m_dataSize);
     assert(m_data.width() == m_inputDimensions);

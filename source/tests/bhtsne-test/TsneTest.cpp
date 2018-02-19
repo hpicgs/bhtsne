@@ -7,6 +7,7 @@
 #include <initializer_list>
 
 #include <bhtsne/TSNE.h>
+#include <omp.h>
 #include "../../bhtsne/source/SpacePartitioningTree.cpp"
 
 class PublicTSNE : public bhtsne::TSNE
@@ -47,13 +48,9 @@ public:
         return TSNE::gaussNumber();
     }
 
-    void zeroMean(bhtsne::Vector2D<double>& data) {
-        TSNE::zeroMean(data);
-    }
-
-    bool TESTING() const override
+    void zeroMean(bhtsne::Vector2D<double> & data)
     {
-        return true;
+        TSNE::zeroMean(data);
     }
 };
 
@@ -83,7 +80,15 @@ protected:
     TsneTest()
         : m_tsne(PublicTSNE())
         , m_tempFile(std::tmpnam(nullptr))
+        , m_defaultNumberOfThreads(omp_get_max_threads())
     {
+        omp_set_num_threads(1);
+        assert(omp_get_max_threads() == 1);
+    }
+
+    ~TsneTest()
+    {
+        omp_set_num_threads(m_defaultNumberOfThreads);
     }
 
     auto createTempfile()
@@ -105,6 +110,7 @@ protected:
     std::string m_tempFile;
     std::ofstream m_fileStream;
     BinaryWriter m_writer;
+    int m_defaultNumberOfThreads;
 };
 
 TEST_F(TsneTest, DefaultValues)
@@ -120,9 +126,9 @@ TEST_F(TsneTest, DefaultValues)
 TEST_F(TsneTest, RandomSeed)
 {
     m_tsne.setRandomSeed(1);
-    ASSERT_DOUBLE_EQ(0.15606557998386178, m_tsne.gaussNumber());
+    EXPECT_EQ(1, m_tsne.randomSeed());
     m_tsne.setRandomSeed(0);
-    ASSERT_DOUBLE_EQ(1.1630780958763871, m_tsne.gaussNumber());
+    EXPECT_EQ(0, m_tsne.randomSeed());
 }
 
 TEST_F(TsneTest, Perplexity)
@@ -199,7 +205,7 @@ TEST_F(TsneTest, LoadLegacy)
     EXPECT_EQ(perplexity, m_tsne.perplexity());
     EXPECT_EQ(outputDimensions, m_tsne.outputDimensions());
     EXPECT_EQ(iterations, m_tsne.iterations());
-    ASSERT_DOUBLE_EQ(-0.51696416431811998, m_tsne.gaussNumber());
+    EXPECT_EQ(randomSeed, m_tsne.randomSeed());
     EXPECT_EQ(data, m_tsne.data()[0][0]);
 
     removeTempfile();

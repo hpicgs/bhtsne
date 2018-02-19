@@ -48,7 +48,7 @@ struct DataPoint
     unsigned int index;
     std::vector<double> data;
 
-    DataPoint(unsigned int dimensions, unsigned int index, double * x);
+    DataPoint(const unsigned int dimensions, const unsigned int index, const double * x);
 };
 
 using DistanceFunction = std::function<double(const DataPoint &, const DataPoint &)>;
