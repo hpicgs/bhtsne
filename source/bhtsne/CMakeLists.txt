@@ -35,8 +35,8 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(headers
     ${include_path}/TSNE.h
     ${include_path}/Vector2D.h
-	${include_path}/Vector2D.inl
-	${include_path}/SparseMatrix.h
+    ${include_path}/Vector2D.inl
+    ${include_path}/SparseMatrix.h
 )
 
 set(sources

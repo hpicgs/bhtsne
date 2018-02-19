@@ -2,8 +2,9 @@
 
 #include "ArgumentParser.h"
 #include "CommandlineOptions.h"
-#include <bhtsne/TSNE.h>
 
+#include <bhtsne/TSNE.h>
+#include <bhtsne/bhtsne-version.h> 
 
 // Function that runs the Barnes-Hut implementation of t-SNE
 int main(int argc, char * argv[])
@@ -14,7 +15,7 @@ int main(int argc, char * argv[])
 	auto parsedArguments = cppassist::ArgumentParser();
 	parsedArguments.parse(argc, argv);
 
-    // print help
+    // handle info parameter
     for (const auto & optionValuePair : parsedArguments.options())
     {
         if (optionValuePair.first == "--help")
@@ -36,6 +37,13 @@ int main(int argc, char * argv[])
                 << "Options with a single - are output formats. Multiple formats can be specified.\n"
                 << "The input file should have a .csv .dat or .tsne extension. For details see the documentation.\n"
                 << "If no filename is specified, the input is read from stdin in csv format.\n";
+        }
+        else if (optionValuePair.first == "--version")
+        {
+            std::cout
+                << BHTSNE_NAME_VERSION << '\n'
+                << BHTSNE_PROJECT_DESCRIPTION << '\n'
+                << BHTSNE_AUTHOR_DOMAIN << '\n';
         }
         return 0;
     }
@@ -109,7 +117,6 @@ int main(int argc, char * argv[])
 	{
 		tsne.saveCSV();
 	}
-
     if (parsedArguments.isSet("-stdout"))
     {
         tsne.saveToCout();
