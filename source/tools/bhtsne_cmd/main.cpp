@@ -14,6 +14,32 @@ int main(int argc, char * argv[])
 	auto parsedArguments = cppassist::ArgumentParser();
 	parsedArguments.parse(argc, argv);
 
+    // print help
+    for (const auto & optionValuePair : parsedArguments.options())
+    {
+        if (optionValuePair.first == "--help")
+        {
+            std::cout << "usage: bhtsne_cmd"
+                << " [--perplexity <value>]"
+                << " [--gradient-accuracy <value>]"
+                << " [--iterations <value>]"
+                << " [--output-dimensions <value>]"
+                << " [--output-file <value>]"
+                << " [--random-seed <value>]"
+                << " [-legacy]"
+                << " [-svg]"
+                << " [-csv]"
+                << " [-stdout]"
+                << " [<filename>]"
+                << "\n\n";
+            std::cout << "Options with two -- are parameter and require a value.\n"
+                << "Options with a single - are output formats. Multiple formats can be specified.\n"
+                << "The input file should have a .csv .dat or .tsne extension. For details see the documentation.\n"
+                << "If no filename is specified, the input is read from stdin in csv format.\n";
+        }
+        return 0;
+    }
+
     //read correct input file
     auto params = parsedArguments.params();
     if (params.size() > 1)
