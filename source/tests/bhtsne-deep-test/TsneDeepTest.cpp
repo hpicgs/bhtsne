@@ -704,7 +704,14 @@ TEST_F(TsneDeepTest, ComputeGaussianPerplexityExact)
 
 TEST_F(TsneDeepTest, ComputeSquaredEuclideanDistance)
 {
-    FAIL();
+    auto expectedDist = 9.0 + 9.0 + 9.0;
+
+    auto result = m_tsne.computeSquaredEuclideanDistance(s_testDataSet);
+
+    EXPECT_DOUBLE_EQ(0, result[0][0]);
+    EXPECT_DOUBLE_EQ(expectedDist, result[0][1]);
+    EXPECT_DOUBLE_EQ(expectedDist, result[1][0]);
+    EXPECT_DOUBLE_EQ(0, result[1][1]);
 }
 
 TEST_F(TsneDeepTest, ComputeGaussianPerplexity)
