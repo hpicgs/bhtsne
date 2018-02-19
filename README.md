@@ -22,7 +22,7 @@ cmake --build build
 ```
 For Windows we recommend the cmake GUI to create a Visual Studio solution.
 
-# C++ Library Usage Example#
+# C++ Library Usage Example #
 ```
 #include <bhtsne/TSNE.h>
 
