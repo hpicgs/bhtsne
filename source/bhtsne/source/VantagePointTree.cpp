@@ -1,6 +1,7 @@
 #include "VantagePointTree.h"
 
 #include <cassert>
+#include <iostream>
 
 #include "immintrin.h"
 
@@ -30,6 +31,7 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
     int i = 0;
 
 #ifdef AVX2_ENABLED
+    std::cout << "running avx code now" << std::endl;
     auto squared_accum = _mm256_set1_pd(0.0);
     for (; i < a.dimensions - 3; i += 4)
     {
