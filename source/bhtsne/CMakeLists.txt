@@ -162,6 +162,7 @@ target_link_libraries(${target}
 
 target_compile_definitions(${target}
     PRIVATE
+    $<$<BOOL:${AVX2_ENABLED}>:AVX2_ENABLED>
 
     PUBLIC
     $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:${target_id}_STATIC_DEFINE>
@@ -178,6 +179,7 @@ target_compile_definitions(${target}
 target_compile_options(${target}
     PRIVATE
     $<$<BOOL:${OPENMP_FOUND}>:${OpenMP_CXX_FLAGS}>
+    ${AVX2_FLAGS}
 
     PUBLIC
     ${DEFAULT_COMPILE_OPTIONS}
