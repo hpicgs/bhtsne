@@ -3,8 +3,6 @@
 # Platform and architecture setup
 #
 
-find_package(OpenMP)
-
 
 # Get upper case system name
 string(TOUPPER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME_UPPER)
@@ -66,9 +64,7 @@ endif ()
 # Compile options
 #
 
-set(DEFAULT_COMPILE_OPTIONS
-  $<$<BOOL:${OPENMP_FOUND}>:${OpenMP_CXX_FLAGS}>
-)
+set(DEFAULT_COMPILE_OPTIONS)
 
 # MSVC compiler options
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
@@ -135,9 +131,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
         $<$<PLATFORM_ID:Darwin>:
             -pthread
         >
-
-		-mavx
-		-mavx2
     )
 endif ()
 
@@ -152,6 +145,5 @@ set(DEFAULT_LINKER_OPTIONS)
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
     set(DEFAULT_LINKER_OPTIONS
         -pthread
-        <$<BOOL:${OPENMP_FOUND}>:${OpenMP_CXX_FLAGS}>
     )
 endif()
