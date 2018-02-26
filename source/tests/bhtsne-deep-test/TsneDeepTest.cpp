@@ -699,7 +699,18 @@ TEST_F(TsneDeepTest, Normalize)
 
 TEST_F(TsneDeepTest, ComputeGaussianPerplexityExact)
 {
-    FAIL();
+    m_tsne.m_data = s_testDataSet;
+    m_tsne.m_dataSize = s_testDataSet.size();
+
+    auto result = m_tsne.computeGaussianPerplexityExact();
+
+    EXPECT_EQ(2, result.width());
+    EXPECT_EQ(2, result.height());
+
+    EXPECT_FLOAT_EQ(0, result[0][0]);
+    EXPECT_DOUBLE_EQ(1, result[0][1]);
+    EXPECT_DOUBLE_EQ(1, result[1][0]);
+    EXPECT_FLOAT_EQ(0, result[1][1]);
 }
 
 TEST_F(TsneDeepTest, ComputeSquaredEuclideanDistance)
