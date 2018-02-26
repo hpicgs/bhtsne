@@ -730,25 +730,25 @@ TEST_F(TsneDeepTest, ComputeGaussianPerplexityExact)
 
     auto result = m_tsne.computeGaussianPerplexityExact();
 
-    EXPECT_EQ(2, result.width());
-    EXPECT_EQ(2, result.height());
+    EXPECT_EQ(s_testDataSet.size(), result.width());
+    EXPECT_EQ(s_testDataSet.size(), result.height());
 
-    EXPECT_FLOAT_EQ(0, result[0][0]);
-    EXPECT_DOUBLE_EQ(1, result[0][1]);
-    EXPECT_DOUBLE_EQ(1, result[1][0]);
-    EXPECT_FLOAT_EQ(0, result[1][1]);
+    for(auto i = 0; i < result.width(); i++)
+        for(auto j = 0; j < result.height(); j++)
+            EXPECT_FLOAT_EQ(i == j ? 0.0 : 1.0 / (result.width() - 1.0), result[i][j]);
 }
 
 TEST_F(TsneDeepTest, ComputeSquaredEuclideanDistance)
 {
-    auto expectedDist = 9.0 + 9.0 + 9.0;
+    auto expectedDists = std::vector<int>{ 0, 27, 108, 243, 432, 675, 972, 27, 0, 27, 108, 243, 432, 675, 108, 27, 0, 27, 108, 243, 432, 243, 108, 27, 0, 27, 108, 243, 432, 243, 108, 27, 0, 27, 108, 675, 432, 243, 108, 27, 0, 27, 972, 675, 432, 243, 108, 27, 0 };
 
     auto result = m_tsne.computeSquaredEuclideanDistance(s_testDataSet);
 
-    EXPECT_DOUBLE_EQ(0, result[0][0]);
-    EXPECT_DOUBLE_EQ(expectedDist, result[0][1]);
-    EXPECT_DOUBLE_EQ(expectedDist, result[1][0]);
-    EXPECT_DOUBLE_EQ(0, result[1][1]);
+    auto exp = expectedDists.begin();
+    for (auto entry : result)
+    {
+        EXPECT_DOUBLE_EQ(*(exp++), entry);
+    }
 }
 
 TEST_F(TsneDeepTest, ComputeGaussianPerplexity)
