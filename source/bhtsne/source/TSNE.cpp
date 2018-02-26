@@ -1100,7 +1100,7 @@ void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
     }
 
 	// Build ball tree on data set
-	auto vantagePointTree = VantagePointTree();
+	auto vantagePointTree = VantagePointTree(randomSeed());
 	auto obj_X = std::vector<DataPoint>(m_dataSize, DataPoint(m_inputDimensions, 0, m_data[0]));
 	for (unsigned int n = 0; n < m_dataSize; ++n)
     {

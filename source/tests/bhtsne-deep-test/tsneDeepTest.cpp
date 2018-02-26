@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <bhtsne/TSNE.h>
+#include <bhtsne/SparseMatrix.h>
 
 class PublicTSNE : public bhtsne::TSNE
 {
@@ -103,7 +104,14 @@ protected:
 const std::vector<unsigned int> TsneDeepTest::s_testValuesInt = std::vector<unsigned int>{ 1, 0, 42, 1337 };
 const std::vector<double> TsneDeepTest::s_testValuesDouble = std::vector<double>{ 1.0, 0.0, 4.2, 13.37 };
 const std::vector<std::string> TsneDeepTest::s_testValuesString = std::vector<std::string>{ "true", "false", "fourty-two", "leet" };
-const std::vector<std::vector<double>> TsneDeepTest::s_testDataSet = std::vector<std::vector<double>>{ { 1.0, 2.0, 3.0 },{ 4.0, 5.0, 6.0 } };
+const std::vector<std::vector<double>> TsneDeepTest::s_testDataSet = std::vector<std::vector<double>>{
+	{ 1.0, 2.0, 3.0 },
+	{ 4.0, 5.0, 6.0 },
+	{ 7.0, 8.0, 9.0 },
+	{ 10.0, 11.0, 12.0 },
+	{ 13.0, 14.0, 15.0 },
+	{ 16.0, 17.0, 18.0 },
+	{ 19.0, 20.0, 21.0 } };
 
 TEST_F(TsneDeepTest, Constructor)
 {
@@ -666,7 +674,16 @@ TEST_F(TsneDeepTest, SaveSVG)
 TEST_F(TsneDeepTest, ZeroMean)
 {
 	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
-	auto expectedResults = std::vector<std::vector<double>>{ { -1.5, -1.5, -1.5 },{ 1.5, 1.5, 1.5 } };
+	auto expectedResults = std::vector<std::vector<double>>
+	{
+		{ -9.0, -9.0, -9.0 },
+		{ -6.0, -6.0, -6.0 },
+		{ -3.0, -3.0, -3.0 },
+		{  0.0,  0.0,  0.0 },
+		{  3.0,  3.0,  3.0 },
+		{  6.0,  6.0,  6.0 },
+		{  9.0,  9.0,  9.0 }
+	};
 
 	m_tsne.zeroMean(testSet);
 
@@ -682,8 +699,17 @@ TEST_F(TsneDeepTest, ZeroMean)
 
 TEST_F(TsneDeepTest, Normalize)
 {
-	auto testSet =  bhtsne::Vector2D<double>(s_testDataSet);
-	auto expectedResults = std::vector<std::vector<double>>{ { 1.0/6.0, 1.0/3.0, 0.5}, { 2.0/3.0, 5.0/6.0, 1.0 } };
+	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
+	auto expectedResults = std::vector<std::vector<double>>(7);
+	for (auto i = size_t(0); i < 7; ++i)
+	{
+		auto sample = std::vector<double>(3);
+		for (auto j = size_t(0); j < 3; ++j)
+		{
+			sample[j] = (i * 3 + j + 1) / 21.0;
+		}
+		expectedResults[i] = sample;
+	}
 
 	m_tsne.normalize(testSet);
 
@@ -727,5 +753,39 @@ TEST_F(TsneDeepTest, ComputeSquaredEuclideanDistance)
 
 TEST_F(TsneDeepTest, ComputeGaussianPerplexity)
 {
-    FAIL();
+	auto similarities = bhtsne::SparseMatrix();
+
+	auto expectedValues = std::vector<double>{ 0.6169480414, 0.1151944809, 0.01670360337, 0.001118768075, 3.461157475e-05, 9.891998642e-07, 0.6169480414, 0.5, 3.3198386e-36, 7.786851871e-95, 6.452155618e-177, 3.461157475e-05, 0.1151944809, 0.5, 0.5, 3.3198386e-36, 7.786851871e-95, 0.001118768075, 0.01670360337, 3.3198386e-36, 0.5, 0.5, 3.3198386e-36, 0.01670360337, 0.001118768075, 7.786851871e-95, 3.3198386e-36, 0.5, 0.5, 0.1151944809, 3.461157475e-05, 6.452155618e-177, 7.786851871e-95, 3.3198386e-36, 0.5, 0.6169480414, 9.891998642e-07, 3.461157475e-05, 0.001118768075, 0.01670360337, 0.1151944809, 0.6169480414 };
+	auto expectedColumns = std::vector<unsigned int>{ 1, 2, 3, 4, 5, 6, 0, 2, 3, 4, 5, 6, 0, 1, 3, 4, 5, 6, 0, 1, 2, 4, 5, 6, 0, 1, 2, 3, 5, 6, 0, 1, 2, 3, 4, 6, 0, 1, 2, 3, 4, 5 };
+	auto expectedRows = std::vector<unsigned int>{ 0, 6, 12, 18, 24, 30, 36, 42 };
+
+	m_tsne.m_data = bhtsne::Vector2D<double>(s_testDataSet);
+	m_tsne.m_dataSize = m_tsne.m_data.height();
+	m_tsne.m_inputDimensions = m_tsne.m_data.width();
+	m_tsne.m_perplexity = 2.0;
+
+	m_tsne.computeGaussianPerplexity(similarities);
+	m_tsne.symmetrizeMatrix(similarities);
+
+	EXPECT_EQ(expectedValues.size(), similarities.values.size());
+	EXPECT_EQ(expectedColumns.size(), similarities.columns.size());
+	EXPECT_EQ(expectedRows.size(), similarities.rows.size());
+
+	auto expectedValue = expectedValues.begin();
+	for (auto val : similarities.values)
+	{
+		EXPECT_FLOAT_EQ(*(expectedValue++), val);
+	}
+
+	auto expectedColumn = expectedColumns.begin();
+	for (auto col : similarities.columns)
+	{
+		EXPECT_FLOAT_EQ(*(expectedColumn++), col);
+	}
+
+	auto expectedRow = expectedRows.begin();
+	for (auto row : similarities.rows)
+	{
+		EXPECT_FLOAT_EQ(*(expectedRow++), row);
+	}
 }
