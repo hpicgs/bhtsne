@@ -22,9 +22,9 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
     return sqrt(squaredDistance);
 }
 
-VantagePointTree::VantagePointTree(DistanceFunction distanceFunction)
+VantagePointTree::VantagePointTree(const unsigned long randomSeed, DistanceFunction distanceFunction)
         : m_maxDistance(0.0)
-        , m_randomNumberGenerator(std::random_device()())
+        , m_randomNumberGenerator(randomSeed)
         , m_distanceFunction(std::move(distanceFunction))
         , m_root(std::make_unique<Node>())
 {}
