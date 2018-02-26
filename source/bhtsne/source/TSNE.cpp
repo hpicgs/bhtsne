@@ -50,8 +50,6 @@
 #include "SpacePartitioningTreeTemplate.h"
 #include "VantagePointTree.h"
 
-#include <bhtsne/bhtsne-version.h> // includes BHTSNE_VERSION macro
-
 
 using namespace bhtsne;
 

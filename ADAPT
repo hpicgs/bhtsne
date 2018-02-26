@@ -6,7 +6,7 @@ To adapt this template to your own project, follow these steps:
 In the root directory adapt/change/do the following:
 
 [x] Edit AUTHORS
-[ ] Edit LICENSE
+[x] Edit LICENSE
 [x] Edit README.md
 [x] Rename ./template-config.cmake -> <project>-config.cmake
 
@@ -54,7 +54,7 @@ docs/api-docs/doxyfile.in:
 In subdirectory "./source/tests/" do:
 
 source/tests/CMakeLists.txt:
-[ ]  Set META_PROJECT_NAME
+[x]  Set META_PROJECT_NAME
 --------------------------------------------------------------------
 
 
@@ -65,7 +65,7 @@ General stuff left to do:
 [x] Add new projects to source/CMakeLists.txt
 [x] Add new projects to ./{project}-config.cmake
 [ ] Add new projects to docs/api-docs/doxyfile.in
-[ ] Remove data/DATA_FOLDER.txt
-[ ] Populate data/
+[x] Remove data/DATA_FOLDER.txt
+[x] Populate data/
 [ ] Remove ADAPT
 --------------------------------------------------------------------

@@ -3,6 +3,7 @@
 # Platform and architecture setup
 #
 
+
 # Get upper case system name
 string(TOUPPER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME_UPPER)
 
@@ -130,9 +131,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
         $<$<PLATFORM_ID:Darwin>:
             -pthread
         >
-
-		-mavx
-		-mavx2
     )
 endif ()
 

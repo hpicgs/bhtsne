@@ -54,13 +54,13 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
     }
     ASSERT_NE(executedInParallel, 0);
 
-    ASSERT_DOUBLE_EQ(sumQ, omp_sumQ);
+    ASSERT_FLOAT_EQ(sumQ, omp_sumQ); // lower precision because openmp might change precision of fp operations
 
     for (unsigned int i = 0; i < negativeForces.height(); ++i)
     {
         for (unsigned int j = 0; j < negativeForces.width(); ++j)
         {
-            ASSERT_DOUBLE_EQ(negativeForces[i][j], omp_negativeForces[i][j]);
+            ASSERT_FLOAT_EQ(negativeForces[i][j], omp_negativeForces[i][j]);
         }
     }
 }
