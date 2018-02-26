@@ -5,6 +5,7 @@
 
 # find_package(THIRDPARTY REQUIRED)
 
+find_package(OpenMP)
 
 #
 # Library name and options
@@ -35,8 +36,8 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(headers
     ${include_path}/TSNE.h
     ${include_path}/Vector2D.h
-	${include_path}/Vector2D.inl
-	${include_path}/SparseMatrix.h
+    ${include_path}/Vector2D.inl
+    ${include_path}/SparseMatrix.h
 )
 
 set(sources
@@ -144,7 +145,6 @@ target_include_directories(${target}
 # Libraries
 #
 
-find_package(OpenMP)
 
 target_link_libraries(${target}
     PRIVATE
@@ -162,6 +162,7 @@ target_link_libraries(${target}
 
 target_compile_definitions(${target}
     PRIVATE
+    $<$<BOOL:${AVX2_ENABLED}>:AVX2_ENABLED>
 
     PUBLIC
     $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:${target_id}_STATIC_DEFINE>
@@ -177,6 +178,7 @@ target_compile_definitions(${target}
 
 target_compile_options(${target}
     PRIVATE
+    ${AVX2_FLAGS}
     $<$<BOOL:${OPENMP_FOUND}>:${OpenMP_CXX_FLAGS}>
 
     PUBLIC

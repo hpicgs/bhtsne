@@ -3,6 +3,7 @@
 # Platform and architecture setup
 #
 
+
 # Get upper case system name
 string(TOUPPER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME_UPPER)
 

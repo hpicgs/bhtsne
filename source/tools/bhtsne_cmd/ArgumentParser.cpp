@@ -29,6 +29,7 @@ namespace cppassist
                 else
                 {
                     m_options[arg] = "";
+                    break;
                 }
             }
             else if (arg.find('-') == 0) // Options without value (-option-name)
