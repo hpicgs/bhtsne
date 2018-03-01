@@ -20,7 +20,6 @@ message(STATUS "Test ${target}")
 
 set(sources
     main.cpp
-    TsneTest.cpp
     RandomTest.cpp
     SpacePartitioningTreeTest.cpp
 )
