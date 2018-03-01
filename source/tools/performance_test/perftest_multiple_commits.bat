@@ -16,7 +16,7 @@ echo Done
 echo|set /p="Setting up VS env... "
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat" > nul
 echo Done
-cd %~dp0\bhtsne-performance-test\
+cd /d %~dp0\bhtsne-performance-test\
 for /F "tokens=*" %%A in (..\commits.txt) do (
 	echo Processing commit %%A:
 	git checkout %%A -q
