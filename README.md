@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/hpicgs/bhtsne.svg)](https://travis-ci.org/hpicgs/bhtsne)
+[![Build Status](https://travis-ci.org/hpicgs/bhtsne.svg?branch=master)](https://travis-ci.org/hpicgs/bhtsne)
 [![Build Status](https://ci.appveyor.com/api/projects/status/1d4q1pd8d3h6rpoe?svg=true)](https://ci.appveyor.com/project/chistopher/bhtsne)
 
 
@@ -8,8 +8,10 @@ This software package contains a Barnes-Hut implementation of the t-SNE algorith
 
 # Requirements #
 - C++14
+
+Optional:
 - openMP (supported on all major plattforms including Solaris, AIX, HP-UX, Linux, macOS, and Windows)
-- CPU with AVX2 (first supported by Intel with the Knights Landing architecture)
+- AVX2 (first supported by Intel with the Knights Landing architecture)
 
 # Installation #
 
@@ -38,6 +40,7 @@ int main(int argc, char * argv[])
 }
 ```
 For a more information please refer to our doxygen documentation. The documentation can be enabled with the OPTION_BUILD_DOCS cmake option.
+Please note that linking against the library may require additional linker options for OpenMP.
 
 # CLI Usage Examples #
 ```
