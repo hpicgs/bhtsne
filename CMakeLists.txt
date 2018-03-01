@@ -104,6 +104,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/VERSION" "${META_NAME_VERSION}")
 
 include(cmake/CompileOptions.cmake)
 include(cmake/CheckSimd.cmake)
+find_package(OpenMP)
 
 
 #

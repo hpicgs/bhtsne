@@ -4,7 +4,6 @@
 #
 
 find_package(${META_PROJECT_NAME} REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../")
-find_package(OpenMP)
 
 #
 # Executable name and options
