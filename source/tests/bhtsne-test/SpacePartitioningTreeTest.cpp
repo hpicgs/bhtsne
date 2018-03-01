@@ -1,5 +1,4 @@
 #include <gmock/gmock.h>
-#include <omp.h>
 #include "../../bhtsne/source/SpacePartitioningTreeTemplate.h"
 
 using namespace bhtsne;
@@ -44,15 +43,12 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
     }
 
     // parallel
-    int executedInParallel = 0;
     // omp version on windows (2.0) does only support signed loop variables, should be unsigned
-    #pragma omp parallel for reduction(+:omp_sumQ) reduction(+:executedInParallel)
+    #pragma omp parallel for reduction(+:omp_sumQ)
     for (int n = 0; n < dataSize; ++n)
     {
-        executedInParallel = omp_in_parallel() ? 1 : 0;
         tree.computeNonEdgeForces(n, gradientAccuracy, omp_negativeForces[n], omp_sumQ);
     }
-    ASSERT_NE(executedInParallel, 0);
 
     ASSERT_FLOAT_EQ(sumQ, omp_sumQ); // lower precision because openmp might change precision of fp operations
 

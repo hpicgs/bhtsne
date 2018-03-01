@@ -5,8 +5,6 @@
 
 # find_package(THIRDPARTY REQUIRED)
 
-find_package(OpenMP)
-
 #
 # Library name and options
 #

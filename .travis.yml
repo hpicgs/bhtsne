@@ -7,7 +7,6 @@ addons:
     packages:
     - cmake
     - g++-5
-    - libomp-dev
 
 matrix:
   include:
@@ -44,7 +43,7 @@ matrix:
 before_script:
   - eval "${MATRIX_EVAL}"
   - ./configure
-  - ./configure $CMAKE_CONFIGURATION
+  - CMAKE_OPTIONS="${CMAKE_OPTIONS} -DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE" ./configure $CMAKE_CONFIGURATION
 
 script:
   - cmake --build $BUILD_DIR
