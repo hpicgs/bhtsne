@@ -4,7 +4,6 @@ branches:
   - master
 clone_folder: c:\projects\bhtsne
 image:
-- Visual Studio 2013
 - Visual Studio 2015
 - Visual Studio 2017
 configuration:
@@ -44,9 +43,3 @@ build:
   project: c:\projects\bhtsne\build\bhtsne.sln
   verbosity: minimal
   parallel: true
-only_commits:
-  files:
-    - CMakeLists.txt
-    - appveyor.yml
-    - sources/
-    - cmake/
