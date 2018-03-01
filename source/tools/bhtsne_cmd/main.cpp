@@ -37,6 +37,7 @@ int main(int argc, char * argv[])
                 << "Options with a single - are output formats. Multiple formats can be specified.\n"
                 << "The input file should have a .csv .dat or .tsne extension. For details see the documentation.\n"
                 << "If no filename is specified, the input is read from stdin in csv format.\n";
+            return 0;
         }
         else if (optionValuePair.first == "--version")
         {
@@ -44,8 +45,8 @@ int main(int argc, char * argv[])
                 << BHTSNE_NAME_VERSION << '\n'
                 << BHTSNE_PROJECT_DESCRIPTION << '\n'
                 << BHTSNE_AUTHOR_DOMAIN << '\n';
+            return 0;
         }
-        return 0;
     }
 
     //read correct input file
