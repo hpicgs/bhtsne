@@ -10,6 +10,8 @@ clean:
 build: build-arch
 
 build-arch:
+	export CXX=g++-5
+	export CC=gcc-5
 	mkdir $(BUILDDIR)
 	cd $(BUILDDIR);cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
 	make -C $(BUILDDIR)
