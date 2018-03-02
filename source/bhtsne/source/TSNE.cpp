@@ -47,7 +47,7 @@
 #include <vector>
 #include <numeric>
 
-#include "SpacePartitioningTreeTemplate.h"
+#include "SpacePartitioningTree.h"
 #include "VantagePointTree.h"
 
 

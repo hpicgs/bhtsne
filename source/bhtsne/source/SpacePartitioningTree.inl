@@ -3,7 +3,7 @@
 #include <cmath>
 #include <emmintrin.h>
 
-#include "SpacePartitioningTreeTemplate.h"
+#include "SpacePartitioningTree.h"
 
 
 namespace bhtsne {

@@ -1,5 +1,5 @@
 #include <gmock/gmock.h>
-#include "../../bhtsne/source/SpacePartitioningTreeTemplate.h"
+#include "../../bhtsne/source/SpacePartitioningTree.h"
 
 using namespace bhtsne;
 
