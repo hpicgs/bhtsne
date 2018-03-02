@@ -11,6 +11,7 @@ build: build-arch
 
 build-arch:
 	mkdir $(BUILDDIR)
+    # update alternatives g++ to select correct g++
 	cd $(BUILDDIR);CXX=g++-5 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
 	make -C $(BUILDDIR)
 
