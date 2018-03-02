@@ -11,7 +11,8 @@ build: build-arch
 
 build-arch:
 	mkdir $(BUILDDIR)
-	cd $(BUILDDIR);cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
+    # TODO find a simpler way to conditionally set CXX=g++5 when on trusty; update-alternatives requires sudo...
+	cd $(BUILDDIR); if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; then export CXX=g++-5; fi; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
 	make -C $(BUILDDIR)
 
 # thirdly called by launchpad
