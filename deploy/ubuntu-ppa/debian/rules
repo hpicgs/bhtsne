@@ -36,27 +36,19 @@ libbhtsne:
 	dpkg --build ./debian/tmp ../
 	rm -rf ./debian/tmp
 
-bhtsne:
-	cd $(BUILDDIR)
-	DESTDIR=../debian/tmp make install
-	mkdir -p ./debian/tmp/DEBIAN
-	dpkg-gencontrol -pbhtsne
-	dpkg --build ./debian/tmp ../
-	rm -rf ./debian/tmp
-
-bhtsne-docs:
-	cd $(BUILDDIR)
-	DESTDIR=../debian/tmp make install
-	mkdir -p ./debian/tmp/DEBIAN
-	dpkg-gencontrol -pbhtsne-docs
-	dpkg --build ./debian/tmp ../
-	rm -rf ./debian/tmp
-
 bhtsne-dev:
 	cd $(BUILDDIR)
 	DESTDIR=../debian/tmp make install
 	mkdir -p ./debian/tmp/DEBIAN
 	dpkg-gencontrol -pbhtsne-dev
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+bhtsne-tools:
+	cd $(BUILDDIR)
+	DESTDIR=../debian/tmp make install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -pbhtsne
 	dpkg --build ./debian/tmp ../
 	rm -rf ./debian/tmp
 
