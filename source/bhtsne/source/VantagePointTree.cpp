@@ -15,7 +15,7 @@ DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, co
 double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint & b)
 {
     /*
-    // this is the desired impementation but windwos supports no omp simd with its omp 2.0
+    // this is the desired implementation but windows supports no omp simd with its omp 2.0
     double squaredDistance = 0.0;
     #pragma omp simd reduction(+:squaredDistance)
     for (int i = 0; i < a.dimensions; ++i)
