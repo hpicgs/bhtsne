@@ -1,10 +1,12 @@
 #!/usr/bin/make -f
 
-BUILDDIR = build
+BUILDDIR = ./build
+BUILDDEBUGDIR = ./build-debug
 
 # firstly called by launchpad
 clean:
 	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDEBUGDIR)
 
 # secondly called by launchpad
 build: build-arch
@@ -14,17 +16,48 @@ build-arch:
     # TODO find a simpler way to conditionally set CXX=g++5 when on trusty; update-alternatives requires sudo...
 	cd $(BUILDDIR); if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; then export CXX=g++-5; fi; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
 	make -C $(BUILDDIR)
+	mkdir $(BUILDDEBUGDIR)
+	cd $(BUILDDEBUGDIR)
+	cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=Off -DOPTION_BUILD_DOCS=Off ../
+	make -C $(BUILDDEBUGDIR)
 
 # thirdly called by launchpad
 binary: binary-arch
 
 binary-arch: bhtsne
 
-bhtsne:
-	cd $(BUILDDIR); DESTDIR=../debian/tmp make install
-	mkdir -p debian/tmp/DEBIAN
-	dpkg-gencontrol -pbhtsne
-	dpkg --build debian/tmp ..
-	rm -rf debian/tmp
+# TODO all targets do the same...
 
-.PHONY: build build-arch binary binary-arch clean bhtsne
+libbhtsne:
+	cd $(BUILDDIR)
+	DESTDIR=../debian/tmp make install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+bhtsne:
+	cd $(BUILDDIR)
+	DESTDIR=../debian/tmp make install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -pbhtsne
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+bhtsne-docs:
+	cd $(BUILDDIR)
+	DESTDIR=../debian/tmp make install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -pbhtsne-docs
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+bhtsne-dev:
+	cd $(BUILDDIR)
+	DESTDIR=../debian/tmp make install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -pbhtsne-dev
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+.PHONY: build build-arch binary binary-arch clean libbhtsne bhtsne bhtsne-docs bhtsne-dev
