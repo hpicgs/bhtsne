@@ -3,6 +3,7 @@ Section: misc
 Priority: optional
 Homepage: https://github.com/hpicgs/bhtsne
 Maintainer: Willy Scheibel <willy.scheibel@cginternals.com>
+Architecture: any
 Standards-Version: 3.8.0
 
 Package: libbhtsne
