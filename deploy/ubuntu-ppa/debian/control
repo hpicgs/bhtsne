@@ -3,7 +3,6 @@ Section: misc
 Priority: optional
 Homepage: https://github.com/hpicgs/bhtsne
 Maintainer: Willy Scheibel <willy.scheibel@cginternals.com>
-Architecture: any
 Standards-Version: 3.8.0
 
 Package: libbhtsne
@@ -11,15 +10,19 @@ Package: libbhtsne
 # TODO dont install gcc-5 and g++-5 when not necessary
 Build-Depends: build-essential, cmake (>= 3) | cmake3, g++ (>= 5), gcc-5, g++-5
 Description: This software package contains a Barnes-Hut implementation of the t-SNE algorithm.
+Architecture: any
 
 Package: bhtsne-dev
 Build-Depends: libbhtsne, doxygen, graphviz
 Description: dev component
+Architecture: any
 
 Package: bhtsne-tools
 Build-Depends: libbhtsne
 Description: command line tool
+Architecture: any
 
 Package: bhtsne
 Build-Depends: libbhtsne, bhtsne-dev, bhtsne-tools
 Description: everything
+Architecture: any
