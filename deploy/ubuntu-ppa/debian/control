@@ -4,6 +4,7 @@ Priority: optional
 Homepage: https://github.com/hpicgs/bhtsne
 Maintainer: Willy Scheibel <willy.scheibel@cginternals.com>
 Standards-Version: 3.8.0
+# TODO remove in favor of per package dependcies
 Build-Depends: build-essential, cmake (>= 3) | cmake3, g++ (>= 5), gcc-5, g++-5
 
 Package: libbhtsne
