@@ -11,10 +11,10 @@ clean:
 # secondly called by launchpad
 build: build-arch
 
+# TODO find a simpler way to conditionally set CXX=g++5 when on trusty; update-alternatives requires sudo...
 build-arch:
 	mkdir $(BUILDDIR)
-	cd $(BUILDDIR)
-	# TODO find a simpler way to conditionally set CXX=g++5 when on trusty; update-alternatives requires sudo...
+	cd $(BUILDDIR) \
 	if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; \
 	then export CXX=g++-5; fi; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
