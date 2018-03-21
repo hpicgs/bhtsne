@@ -803,7 +803,6 @@ void TSNE::runExact()
 }
 
 
-
 //save methods--------------------------------------------------------------------------------------
 
 void TSNE::saveToStream(std::ostream & stream)
