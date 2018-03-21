@@ -38,7 +38,7 @@ build-arch:
 # thirdly called by launchpad
 binary: binary-arch
 
-binary-arch: bhtsne
+binary-arch: libbhtsne
 
 # TODO all targets do the same...
 
