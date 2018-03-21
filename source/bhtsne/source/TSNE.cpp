@@ -417,7 +417,7 @@ void TSNE::setOutputFile(const std::string & file)
 }
 
 
-//load methods-------------------------------------------------------------------------------------
+//load methods------------------------------------------------------------------------------------
 
 bool bhtsne::TSNE::loadFromStream(std::istream & stream)
 {
