@@ -25,7 +25,9 @@ build-arch:
 	make -C $(BUILDDIR)
 
 	mkdir $(BUILDDEBUGDIR)
-	cd $(BUILDDEBUGDIR)
+	cd $(BUILDDEBUGDIR); \
+	if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; \
+	then export CXX=g++-5; fi; \
 	cmake -DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_INSTALL_PREFIX=/usr \
 	-DOPTION_BUILD_TESTS=Off \
