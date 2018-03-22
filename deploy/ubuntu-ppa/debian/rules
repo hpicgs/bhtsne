@@ -38,9 +38,9 @@ build-arch:
 # thirdly called by launchpad
 binary: binary-arch
 
-binary-arch: libbhtsne
+binary-arch: libbhtsne libbhtsne-dev libbhtsne-tools libbhtsne-all
 
-# TODO all targets do the same...
+# TODO component install
 
 libbhtsne:
 	cd $(BUILDDIR); DESTDIR=../debian/tmp make install
@@ -57,10 +57,16 @@ libbhtsne-dev:
 	rm -rf ./debian/tmp
 
 libbhtsne-tools:
-	cd $(BUILDDIR);	DESTDIR=../debian/tmp make install
+	cd $(BUILDDIR);	DESTDIR=../debian/tmp COMPONENT=tools make component_install
 	mkdir -p ./debian/tmp/DEBIAN
 	dpkg-gencontrol -plibbhtsne-tools
 	dpkg --build ./debian/tmp ../
 	rm -rf ./debian/tmp
 
-.PHONY: build build-arch binary binary-arch clean libbhtsne bhtsne-dev bhtsne-tools
+libbhtsne-all:
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne-all
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+.PHONY: build build-arch binary binary-arch clean libbhtsne libbhtsne-dev libbhtsne-tools libbhtsne-all
