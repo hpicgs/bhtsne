@@ -11,7 +11,7 @@ clean:
 # secondly called by launchpad
 build: build-arch
 
-# TODO find a simpler way to conditionally set CXX=g++5 when on trusty; update-alternatives requires sudo...
+# TODO find a simpler way to conditionally set CXX=g++5 when g++ version < 5; update-alternatives requires sudo...
 build-arch:
 	mkdir $(BUILDDIR)
 	cd $(BUILDDIR); \
@@ -39,8 +39,6 @@ build-arch:
 binary: binary-arch
 
 binary-arch: libbhtsne libbhtsne-dev libbhtsne-tools libbhtsne-docs libbhtsne-all
-
-# TODO make sure component install works
 
 libbhtsne:
 	cd $(BUILDDIR); DESTDIR=../debian/tmp COMPONENT=runtime make component_install

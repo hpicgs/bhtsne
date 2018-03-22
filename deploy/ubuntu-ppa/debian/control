@@ -16,13 +16,13 @@ Package: libbhtsne-dev
 Architecture: any
 Depends: libbhtsne, doxygen, graphviz
 Homepage: https://github.com/hpicgs/bhtsne
-Description: dev component of libbhtsne
+Description: headers and cmake config files to use libbhtsne as C++ library
 
 Package: libbhtsne-tools
 Architecture: any
 Depends: libbhtsne
 Homepage: https://github.com/hpicgs/bhtsne
-Description: command line tools for the Barnes-Hut t-SNE implementation and it's performance
+Description: command line tools for libbhtsne
 
 Package: libbhtsne-docs
 Architecture: any
