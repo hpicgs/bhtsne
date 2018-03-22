@@ -12,6 +12,9 @@
 *.la
 *.a
 
+# data dir
+/data/
+
 # Build dir
 build*
 debug_build
