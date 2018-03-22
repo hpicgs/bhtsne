@@ -13,7 +13,8 @@
 *.a
 
 # data dir
-/data/
+/data/*
+!/data/small.csv
 
 # Build dir
 build*
