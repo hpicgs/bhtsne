@@ -43,14 +43,15 @@ binary-arch: libbhtsne
 # TODO all targets do the same...
 
 libbhtsne:
-	echo before cd $PWD
+	pwd
 	cd $(BUILDDIR)
-	echo $PWD
-	ls -lisa
-	DESTDIR=../debian/tmp make install
-	mkdir -p ./debian/tmp/DEBIAN
-	dpkg-gencontrol -plibbhtsne
-	dpkg --build ./debian/tmp ../
+	pwd
+	cd $(BUILDDIR); \
+	ls -lisa; \
+	DESTDIR=../debian/tmp make install; \
+	mkdir -p ./debian/tmp/DEBIAN; \
+	dpkg-gencontrol -plibbhtsne; \
+	dpkg --build ./debian/tmp ../; \
 	rm -rf ./debian/tmp
 
 bhtsne-dev:
