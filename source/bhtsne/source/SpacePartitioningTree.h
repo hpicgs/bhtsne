@@ -27,7 +27,6 @@ namespace bhtsne {
 
         // Children
         std::array<std::unique_ptr<SpacePartitioningTree>, 1u << D> m_children;
-        unsigned int m_numberOfChildren;
 
     public:
         explicit SpacePartitioningTree(const Vector2D<double> & data);

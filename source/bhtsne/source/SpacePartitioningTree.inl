@@ -16,7 +16,6 @@ SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data)
     , m_pointIndex(0)
     , m_isLeaf(true)
     , m_cumulativeSize(1)
-    , m_numberOfChildren(1u << D) // = 2^Dimensions
 {
     auto numberOfPoints = static_cast<unsigned int>(data.height());
     assert(numberOfPoints > 0);
@@ -75,7 +74,6 @@ SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data, c
     , m_pointIndex(new_index)
     , m_isLeaf(true)
     , m_cumulativeSize(1)
-    , m_numberOfChildren(1u << D) // = 2^Dimensions
 {
     auto new_point = m_data[new_index];
     for (unsigned int d = 0; d < D; ++d)
