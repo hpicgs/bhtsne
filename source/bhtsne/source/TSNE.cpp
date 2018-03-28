@@ -68,16 +68,16 @@ TSNE::TSNE()
 
 // Compute gradient of the t-SNE cost function (using Barnes-Hut algorithm) (approximately)
 template<unsigned int D>
-Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
+Vector2D TSNE::computeGradient(SparseMatrix & similarities)
 {
     // Construct space-partitioning tree on current map
     auto tree = SpacePartitioningTree<D>(m_result);
 
     // Compute all terms required for t-SNE gradient
-    auto positiveForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
+    auto positiveForces = Vector2D(m_dataSize, m_outputDimensions, 0.0);
     tree.computeEdgeForces(similarities.rows, similarities.columns, similarities.values, positiveForces);
 
-    auto negativeForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
+    auto negativeForces = Vector2D(m_dataSize, m_outputDimensions, 0.0);
     double sumQ = 0.0;
     // omp version on windows (2.0) does only support signed loop variables, should be unsigned
     #pragma omp parallel for reduction(+:sumQ)
@@ -86,7 +86,7 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
         tree.computeNonEdgeForces(n, m_gradientAccuracy, negativeForces[n], sumQ);
     }
 
-    auto result = Vector2D<double>(m_dataSize, m_outputDimensions);
+    auto result = Vector2D(m_dataSize, m_outputDimensions);
     // Compute final t-SNE gradient
     for (unsigned int i = 0; i < m_dataSize; ++i)
     {
@@ -99,9 +99,9 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
 }
 
 // Compute gradient of the t-SNE cost function (exact)
-Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
+Vector2D TSNE::computeGradientExact(const Vector2D & Perplexity)
 {
-    auto gradients = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
+    auto gradients = Vector2D(m_dataSize, m_outputDimensions, 0.0);
 
     // Compute the squared Euclidean distance matrix
     auto distances = computeSquaredEuclideanDistance(m_result);
@@ -110,7 +110,7 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
 
     // Compute Q-matrix and normalization sum
     // Q = similarities of low dimensional output data
-    auto Q = Vector2D<double>(m_dataSize, m_dataSize);
+    auto Q = Vector2D(m_dataSize, m_dataSize);
     double sumQ = 0.0;
     for (unsigned int n = 0; n < m_dataSize; ++n)
     {
@@ -144,13 +144,13 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
 }
 
 // Evaluate t-SNE cost function (exactly)
-double TSNE::evaluateErrorExact(const Vector2D<double> & Perplexity)
+double TSNE::evaluateErrorExact(const Vector2D & Perplexity)
 {
     assert(Perplexity.height() == m_dataSize);
     assert(Perplexity.width() == m_dataSize);
 
     // Compute the squared Euclidean distance matrix
-    auto Q = Vector2D<double>(m_dataSize, m_dataSize, std::numeric_limits<double>::min());
+    auto Q = Vector2D(m_dataSize, m_dataSize, std::numeric_limits<double>::min());
     auto distances = computeSquaredEuclideanDistance(m_result);
     assert(distances.height() == m_result.height());
     assert(distances.width() == m_result.height());
@@ -487,8 +487,14 @@ bool TSNE::loadLegacy(const std::string & file)
 	f.read(reinterpret_cast<char *>(&m_iterations), sizeof(m_iterations));
 
     //read data
-    m_data.initialize(m_dataSize, m_inputDimensions);
-	f.read(reinterpret_cast<char *>(m_data[0]), m_dataSize * sizeof(double) * m_inputDimensions);
+    std::vector<std::vector<double>> data;
+    for (int i = 0; i < m_dataSize; ++i)
+    {
+        auto row = std::vector<double>(m_inputDimensions);
+        f.read(reinterpret_cast<char *>(row.data()), sizeof(double) * m_inputDimensions);
+        data.push_back(std::move(row));
+    }
+    m_data = data;
 
     //read seed
 	if (!f.eof())
@@ -526,8 +532,14 @@ bool TSNE::loadTSNE(const std::string & file)
 	f.read(reinterpret_cast<char *>(&m_inputDimensions), sizeof(m_inputDimensions));
 
     //read data
-    m_data.initialize(m_dataSize, m_inputDimensions);
-    f.read(reinterpret_cast<char *>(m_data[0]), m_dataSize * sizeof(double) * m_inputDimensions);
+    std::vector<std::vector<double>> data;
+    for (int i = 0; i < m_dataSize; ++i)
+    {
+        auto row = std::vector<double>(m_inputDimensions);
+        f.read(reinterpret_cast<char *>(row.data()), sizeof(double) * m_inputDimensions);
+        data.push_back(std::move(row));
+    }
+    m_data = data;
 
 	return true;
 }
@@ -612,8 +624,8 @@ void TSNE::runApproximation()
     double final_momentum = 0.8;
     double eta = 200.0;
 
-    auto uY = Vector2D<double>(m_dataSize, m_outputDimensions);
-    auto gains = Vector2D<double>(m_dataSize, m_outputDimensions, 1.0);
+    auto uY = Vector2D(m_dataSize, m_outputDimensions);
+    auto gains = Vector2D(m_dataSize, m_outputDimensions, 1.0);
 
 	// Perform main training loop
     std::cout << " Input similarities computed. Learning embedding..." << std::endl;
@@ -735,8 +747,8 @@ void TSNE::runExact()
     // Perform main training loop
     std::cout << "Input similarities computed. Learning embedding..." << std::endl;
 
-    auto uY    = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
-    auto gains = Vector2D<double>(m_dataSize, m_outputDimensions, 1.0);
+    auto uY    = Vector2D(m_dataSize, m_outputDimensions, 0.0);
+    auto gains = Vector2D(m_dataSize, m_outputDimensions, 1.0);
 
     for (unsigned int iteration = 1; iteration <= m_iterations; ++iteration)
     {
@@ -856,7 +868,10 @@ void TSNE::saveLegacy()
 
 	f.write(reinterpret_cast<char *>(&m_dataSize), sizeof(m_dataSize));
 	f.write(reinterpret_cast<char *>(&m_outputDimensions), sizeof(m_outputDimensions));
-	f.write(reinterpret_cast<char *>(m_result[0]), m_dataSize * m_outputDimensions * sizeof(double));
+    for (int i = 0; i < m_dataSize; ++i)
+    {
+        f.write(reinterpret_cast<char *>(m_result[i]), m_outputDimensions * sizeof(double));
+    }
 	f.write(reinterpret_cast<char *>(landmarks.data()), landmarks.size() * sizeof(int));
 	f.write(reinterpret_cast<char *>(costs.data()), costs.size() * sizeof(double));
 
@@ -940,7 +955,7 @@ void TSNE::saveSVG()
 }
 
 //make the mean of all data points equal 0 for each dimension -> zero mean
-void TSNE::zeroMean(Vector2D<double> & points)
+void TSNE::zeroMean(Vector2D & points)
 {
     const auto dimensions = points.width();
     const auto size = points.height();
@@ -960,7 +975,7 @@ void TSNE::zeroMean(Vector2D<double> & points)
     }
 }
 
-void TSNE::normalize(Vector2D<double> & vec)
+void TSNE::normalize(Vector2D & vec)
 {
     assert(vec.size() > 0);
     double max_X = *std::max_element(vec.begin(), vec.end());
@@ -970,11 +985,11 @@ void TSNE::normalize(Vector2D<double> & vec)
     }
 }
 
-Vector2D<double> TSNE::computeGaussianPerplexityExact()
+Vector2D TSNE::computeGaussianPerplexityExact()
 {
 	// Compute the squared Euclidean distance matrix
 	auto distances = computeSquaredEuclideanDistance(m_data);
-    auto P = Vector2D<double>(m_dataSize, m_dataSize);
+    auto P = Vector2D(m_dataSize, m_dataSize);
 
 	// Compute the Gaussian kernel row by row
 	for (unsigned int n = 0; n < m_dataSize; ++n)
@@ -1054,12 +1069,12 @@ Vector2D<double> TSNE::computeGaussianPerplexityExact()
     return P;
 }
 
-Vector2D<double> TSNE::computeSquaredEuclideanDistance(const Vector2D<double> & points)
+Vector2D TSNE::computeSquaredEuclideanDistance(const Vector2D & points)
 {
     auto dimensions = points.width();
     auto number = points.height();
 
-    auto distances = Vector2D<double>(number, number, 0.0);
+    auto distances = Vector2D(number, number, 0.0);
 
     for (unsigned int i = 0; i < number; ++i)
     {

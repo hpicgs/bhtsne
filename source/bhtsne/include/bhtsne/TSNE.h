@@ -417,13 +417,13 @@ protected:
     void runExact();
 
     template<unsigned int D>
-    Vector2D<double> computeGradient(SparseMatrix & similarities);
-    Vector2D<double> computeGradientExact(const Vector2D<double> & Perplexity);
+    Vector2D computeGradient(SparseMatrix & similarities);
+    Vector2D computeGradientExact(const Vector2D & Perplexity);
     template<unsigned int D>
     double evaluateError(SparseMatrix & similarities);
-    double evaluateErrorExact(const Vector2D<double> & Perplexity);
+    double evaluateErrorExact(const Vector2D & Perplexity);
     void computeGaussianPerplexity(SparseMatrix & similarities) const;
-    Vector2D<double> computeGaussianPerplexityExact();
+    Vector2D computeGaussianPerplexityExact();
 
     // params
     double       m_perplexity;         ///< balance local/global data aspects, see documentation of perplexity()
@@ -434,19 +434,19 @@ protected:
     unsigned int m_outputDimensions;   ///< dimensionality of the result
     unsigned int m_inputDimensions;    ///< dimensionality of the input; set during load
     unsigned int m_dataSize;           ///< size of data; set during load
-	Vector2D<double> m_data;           ///< loaded data
+	Vector2D m_data;           ///< loaded data
     unsigned long m_seed;              ///< seed for random number generator
     std::mt19937 m_gen;                ///< random number generator
 
     // output
     std::string  m_outputFile;         ///< path and basename used to create output files
-	Vector2D<double> m_result;         ///< computation results
+	Vector2D m_result;         ///< computation results
 
     //helper
-    static Vector2D<double> computeSquaredEuclideanDistance(const Vector2D<double> & points);
+    static Vector2D computeSquaredEuclideanDistance(const Vector2D & points);
     void symmetrizeMatrix(SparseMatrix & similarities);
-    static void zeroMean(Vector2D<double>& points);
-    static void normalize(Vector2D<double>& vec);
+    static void zeroMean(Vector2D& points);
+    static void normalize(Vector2D& vec);
     double gaussNumber();
 };
 

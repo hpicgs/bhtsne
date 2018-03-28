@@ -3,6 +3,7 @@
 #include <iostream>
 #include <bhtsne/TSNE.h>
 #include <bhtsne/SparseMatrix.h>
+#include <bhtsne/Vector2D.h>
 
 class PublicTSNE : public bhtsne::TSNE
 {
@@ -595,7 +596,7 @@ TEST_F(TsneDeepTest, SaveToStream)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+    m_tsne.m_result = bhtsne::Vector2D(s_testDataSet);
 
     std::ostringstream result;
     EXPECT_NO_THROW(m_tsne.saveToStream(result));
@@ -620,7 +621,7 @@ TEST_F(TsneDeepTest, SaveToCout)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+    m_tsne.m_result = bhtsne::Vector2D(s_testDataSet);
 
     std::ostringstream result;
     auto coutBuf = std::cout.rdbuf();
@@ -648,7 +649,7 @@ TEST_F(TsneDeepTest, SaveCSV)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+    m_tsne.m_result = bhtsne::Vector2D(s_testDataSet);
 
     m_tsne.setOutputFile(m_tempFile);
     EXPECT_NO_THROW(m_tsne.saveCSV());
@@ -680,7 +681,7 @@ TEST_F(TsneDeepTest, SaveLegacy)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+    m_tsne.m_result = bhtsne::Vector2D(s_testDataSet);
 
     m_tsne.setOutputFile(m_tempFile);
     EXPECT_NO_THROW(m_tsne.saveLegacy());
@@ -691,12 +692,18 @@ TEST_F(TsneDeepTest, SaveLegacy)
 
     int readDataSize;
     int readOutputDimensions;
-    auto readData = bhtsne::Vector2D<double>(dataSize, outputDimensions);
     auto readLandmarks = std::vector<int>(dataSize);
     auto readCosts = std::vector<double>(dataSize);
     result.read(reinterpret_cast<char*>(&readDataSize), sizeof(dataSize));
     result.read(reinterpret_cast<char*>(&readOutputDimensions), sizeof(outputDimensions));
-    result.read(reinterpret_cast<char*>(readData[0]), readData.size() * sizeof(double));
+    std::vector<std::vector<double>> temp;
+    for (int i = 0; i < dataSize; ++i)
+    {
+        auto row = std::vector<double>(outputDimensions);
+        result.read(reinterpret_cast<char *>(row.data()), sizeof(double) * outputDimensions);
+        temp.push_back(std::move(row));
+    }
+    auto readData = temp;
     result.read(reinterpret_cast<char*>(readLandmarks.data()), readLandmarks.size() * sizeof(int));
     result.read(reinterpret_cast<char*>(readCosts.data()), readCosts.size() * sizeof(double));
     EXPECT_EQ(dataSize, readDataSize);
@@ -723,7 +730,7 @@ TEST_F(TsneDeepTest, SaveSVG)
 
     m_tsne.m_dataSize = dataSize;
     m_tsne.m_outputDimensions = outputDimensions;
-    m_tsne.m_result = bhtsne::Vector2D<double>(s_testDataSet);
+    m_tsne.m_result = bhtsne::Vector2D(s_testDataSet);
 
     m_tsne.setOutputFile(m_tempFile);
     EXPECT_NO_THROW(m_tsne.saveSVG());
@@ -783,7 +790,7 @@ TEST_F(TsneDeepTest, SaveSVG)
 
 TEST_F(TsneDeepTest, ZeroMean)
 {
-	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
+	auto testSet = bhtsne::Vector2D(s_testDataSet);
 	auto expectedResults = std::vector<std::vector<double>>
 	{
 		{ -9.0, -9.0, -9.0 },
@@ -809,7 +816,7 @@ TEST_F(TsneDeepTest, ZeroMean)
 
 TEST_F(TsneDeepTest, Normalize)
 {
-	auto testSet = bhtsne::Vector2D<double>(s_testDataSet);
+	auto testSet = bhtsne::Vector2D(s_testDataSet);
 	auto expectedResults = std::vector<std::vector<double>>(7);
 	for (auto i = size_t(0); i < 7; ++i)
 	{
@@ -869,7 +876,7 @@ TEST_F(TsneDeepTest, ComputeGaussianPerplexity)
 	auto expectedColumns = std::vector<unsigned int>{ 1, 2, 3, 4, 5, 6, 0, 2, 3, 4, 5, 6, 0, 1, 3, 4, 5, 6, 0, 1, 2, 4, 5, 6, 0, 1, 2, 3, 5, 6, 0, 1, 2, 3, 4, 6, 0, 1, 2, 3, 4, 5 };
 	auto expectedRows = std::vector<unsigned int>{ 0, 6, 12, 18, 24, 30, 36, 42 };
 
-	m_tsne.m_data = bhtsne::Vector2D<double>(s_testDataSet);
+	m_tsne.m_data = bhtsne::Vector2D(s_testDataSet);
 	m_tsne.m_dataSize = m_tsne.m_data.height();
 	m_tsne.m_inputDimensions = m_tsne.m_data.width();
 	m_tsne.m_perplexity = 2.0;

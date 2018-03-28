@@ -17,7 +17,7 @@ namespace bhtsne {
         std::array<double, D> m_radii;
 
         // Indices in this space-partitioning tree node, corresponding center-of-mass, and list of all children
-        const Vector2D<double> & m_data;
+        const Vector2D & m_data;
         std::array<double, D> m_centerOfMass;
         unsigned int m_pointIndex;
 
@@ -29,8 +29,8 @@ namespace bhtsne {
         std::array<std::unique_ptr<SpacePartitioningTree>, 1u << D> m_children;
 
     public:
-        explicit SpacePartitioningTree(const Vector2D<double> & data);
-        SpacePartitioningTree(const Vector2D<double> & data, const std::array<double, D> & centers,
+        explicit SpacePartitioningTree(const Vector2D & data);
+        SpacePartitioningTree(const Vector2D & data, const std::array<double, D> & centers,
                               const std::array<double, D> & radii, unsigned int new_index);
         SpacePartitioningTree(const SpacePartitioningTree & other) = delete;
         SpacePartitioningTree(SpacePartitioningTree && other) = default;
@@ -42,7 +42,7 @@ namespace bhtsne {
         // TODO return forces instead of io param
         void computeNonEdgeForces(unsigned int pointIndex, double theta, double * forces, double & forceSum) const;
         void computeEdgeForces(const std::vector<unsigned int> & rows, const std::vector<unsigned int> & columns,
-                               const std::vector<double> & values, Vector2D<double> & forces);
+                               const std::vector<double> & values, Vector2D & forces);
     };
 }
 
