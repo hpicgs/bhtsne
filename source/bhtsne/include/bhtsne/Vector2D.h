@@ -1,42 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <iterator>
 
-#include "Allocator.h"
 #include <bhtsne/bhtsne_api.h>
 
 
 namespace bhtsne {
-
-class BHTSNE_API Vector2DIterator : public std::iterator<std::forward_iterator_tag, double>
-{
-    double* p;
-    int data;
-    int padding;
-    int current;
-public:
-    Vector2DIterator(double* np, int ndata, int npadding)
-        : p(np), data(ndata), padding(npadding), current(0) {}
-    Vector2DIterator(const Vector2DIterator& mit) 
-        : p(mit.p), data(mit.data), padding(mit.padding), current(mit.current) {}
-    Vector2DIterator& operator++() { 
-        ++p; 
-        if (++current == data) {
-            current = 0;
-            p += padding;
-        }
-        return *this;
-    }
-    Vector2DIterator operator++(int) {
-        auto old = *this;
-        ++(*this);
-        return old;
-    }
-    bool operator==(const Vector2DIterator& rhs) const { return p == rhs.p; }
-    bool operator!=(const Vector2DIterator& rhs) const { return p != rhs.p; }
-    double& operator*() { return *p; }
-};
 
 
 class BHTSNE_API Vector2D {
@@ -55,17 +24,16 @@ public:
     size_t width() const;
     size_t height() const;
 
-    Vector2DIterator begin();
-    Vector2DIterator end();
+    std::vector<double>::iterator begin();
+    std::vector<double>::iterator end();
 
-    double * operator[](size_t i);
-    const double * operator[](size_t i) const;
-    double & at(size_t i, size_t j);
+    inline double * operator[](size_t i);
+    inline const double * operator[](size_t i) const;
+    inline double & at(size_t i, size_t j);
 
 protected:
-    std::vector<double, aligned_allocator<double, 32>> m_vector;
+    std::vector<double> m_vector;
     size_t m_width;
-    size_t m_internal_width; // with padding for alignment
 };
 
 

@@ -34,7 +34,7 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
     auto squared_accum = _mm256_set1_pd(0.0);
     for (; i < a.dimensions - 3; i += 4)
     {
-        auto diff = _mm256_sub_pd(_mm256_load_pd(a.data.data() + i), _mm256_load_pd(b.data.data() + i));
+        auto diff = _mm256_sub_pd(_mm256_loadu_pd(a.data.data() + i), _mm256_loadu_pd(b.data.data() + i));
         squared_accum = _mm256_add_pd(squared_accum, _mm256_mul_pd(diff, diff));
     }
     alignas(32) double buf[4];
