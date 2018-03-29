@@ -131,8 +131,8 @@ void SpacePartitioningTree<D>::insertIntoChild(unsigned int new_index)
     auto childIndex = childIndexForPoint(m_data[new_index]);
     if (!m_children[childIndex])
     {
-        auto child_center = std::array<double, D>();
-        auto halved_radius = std::array<double, D>();
+        auto child_center = std::array<double, D>{};
+        auto halved_radius = std::array<double, D>{};
         for (unsigned int d = 0; d < D; ++d)
         {
             halved_radius[d] = m_radii[d] / 2.0;
@@ -164,7 +164,7 @@ unsigned int SpacePartitioningTree<D>::childIndexForPoint(const double * point)
 
 // Compute non-edge forces using Barnes-Hut algorithm
 template<unsigned int D>
-void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, double theta, double * forces,
+void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, double squaredTheta, double * forces,
                                                     double & forceSum) const
 {
     // Make sure that we spend no time on empty nodes or self-interactions
@@ -175,17 +175,18 @@ void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, dou
 
     auto distances = std::array<double, D>();
     double sumOfSquaredDistances = 0.0;
+    const auto & point = m_data[pointIndex];
     double maxRadius = 0.0;
     for (unsigned int d = 0; d < D; ++d)
     {
         // Compute distance between point and center-of-mass
-        distances[d] = m_data[pointIndex][d] - m_centerOfMass[d];
+        distances[d] = point[d] - m_centerOfMass[d];
         sumOfSquaredDistances += distances[d] * distances[d];
         maxRadius = std::max(m_radii[d], maxRadius);
     }
 
     // Check whether we can use this node as a "summary"
-    if(m_isLeaf || maxRadius * maxRadius < theta * theta * sumOfSquaredDistances)
+    if(m_isLeaf || maxRadius * maxRadius < squaredTheta * sumOfSquaredDistances)
     {
         // Compute and add t-SNE force between point and current node
         auto inverseDistSum = 1.0 / (1.0 + sumOfSquaredDistances);
@@ -209,7 +210,7 @@ void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, dou
                 continue;
             }
 
-            child->computeNonEdgeForces(pointIndex, theta, forces, forceSum);
+            child->computeNonEdgeForces(pointIndex, squaredTheta, forces, forceSum);
         }
     }
 }

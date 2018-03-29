@@ -6,13 +6,19 @@
 #include "immintrin.h"
 
 
-DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, const double * x)
-	: dimensions(dimensions)
-	, index(index)
-	, data(x, x + dimensions)
+DataPoint::DataPoint()
+: dimensions(0)
+, index(0)
+, data()
 {}
 
-double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint & b)
+DataPoint::DataPoint(const unsigned int dimensions, const unsigned int index, const double * x)
+: dimensions(dimensions)
+, index(index)
+, data(x, x + dimensions)
+{}
+
+double VantagePointTree::squaredEuclideanDistance(const DataPoint & a, const DataPoint & b)
 {
     /*
     // this is the desired implementation but windows supports no omp simd with its omp 2.0
@@ -34,7 +40,7 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
     auto squared_accum = _mm256_set1_pd(0.0);
     for (; i < a.dimensions - 3; i += 4)
     {
-        auto diff = _mm256_sub_pd(_mm256_loadu_pd(a.data.data() + i), _mm256_loadu_pd(b.data.data() + i));
+        auto diff = _mm256_sub_pd(_mm256_load_pd(a.data.data() + i), _mm256_load_pd(b.data.data() + i));
         squared_accum = _mm256_add_pd(squared_accum, _mm256_mul_pd(diff, diff));
     }
     alignas(32) double buf[4];
@@ -48,13 +54,12 @@ double VantagePointTree::euclideanDistance(const DataPoint & a, const DataPoint 
         squaredDistance += difference * difference;
     }
 
-    return sqrt(squaredDistance);
+    return squaredDistance;
 }
 
-VantagePointTree::VantagePointTree(const unsigned long randomSeed, DistanceFunction distanceFunction)
+VantagePointTree::VantagePointTree(const unsigned long randomSeed)
         : m_maxDistance(0.0)
         , m_randomNumberGenerator(randomSeed)
-        , m_distanceFunction(std::move(distanceFunction))
         , m_root(std::make_unique<Node>())
 {}
 
@@ -77,18 +82,16 @@ void VantagePointTree::search(const DataPoint & target, unsigned int k, std::vec
     search(*m_root, target, k, heap);
 
     // Gather final results
-    results.clear();
-    distances.clear();
+    results.resize(heap.size());
+    distances.resize(heap.size());
+    auto index = heap.size()-1;
     while(!heap.empty())
     {
-        results.push_back(m_items[heap.top().index]);
-        distances.push_back(heap.top().distance);
+        results[index] = m_items[heap.top().index];
+        distances[index] = heap.top().distance;
         heap.pop();
+        --index;
     }
-
-    // Results are in reverse order TODO is this really necessary?
-    std::reverse(results.begin(), results.end());
-    std::reverse(distances.begin(), distances.end());
 }
 
 std::unique_ptr<VantagePointTree::Node> VantagePointTree::buildFromPoints(unsigned int lower, unsigned int upper)
@@ -116,10 +119,10 @@ std::unique_ptr<VantagePointTree::Node> VantagePointTree::buildFromPoints(unsign
                          m_items.begin() + median,
                          m_items.begin() + upper,
                          [this, lower](const DataPoint & a, const DataPoint & b){
-                             return m_distanceFunction(m_items[lower], a) < m_distanceFunction(m_items[lower], b); });
+                             return squaredEuclideanDistance(m_items[lower], a) < squaredEuclideanDistance(m_items[lower], b); });
 
         // Threshold of the new node will be the distance to the median
-        node->threshold = m_distanceFunction(m_items[lower], m_items[median]);
+        node->threshold = squaredEuclideanDistance(m_items[lower], m_items[median]);
 
         // Recursively build tree
         node->leftChild = buildFromPoints(lower + 1, median);
@@ -133,7 +136,7 @@ void VantagePointTree::search(const VantagePointTree::Node & node, const DataPoi
                               std::priority_queue<VantagePointTree::HeapItem> & heap)
 {
     // Compute distance between target and current node
-    double distance = m_distanceFunction(m_items[node.index], target);
+    double distance = squaredEuclideanDistance(m_items[node.index], target);
 
     // If current node within radius tau
     if(distance < m_maxDistance)

@@ -80,10 +80,12 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
     auto negativeForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
     double sumQ = 0.0;
     // omp version on windows (2.0) does only support signed loop variables, should be unsigned
+    const auto squaredGradientAccuracy = m_gradientAccuracy * m_gradientAccuracy;
+
     #pragma omp parallel for reduction(+:sumQ)
     for (int n = 0; n < m_dataSize; ++n)
     {
-        tree.computeNonEdgeForces(n, m_gradientAccuracy, negativeForces[n], sumQ);
+        tree.computeNonEdgeForces(n, squaredGradientAccuracy, negativeForces[n], sumQ);
     }
 
     auto result = Vector2D<double>(m_dataSize, m_outputDimensions);
@@ -197,9 +199,10 @@ double TSNE::evaluateError(SparseMatrix & similarities)
     auto tree = SpacePartitioningTree<D>(m_result);
     auto buff = std::vector<double>(m_outputDimensions, 0.0);
     double sumQ = 0.0;
+    const auto squaredGradientAccuracy = m_gradientAccuracy * m_gradientAccuracy;
     for (unsigned int i = 0; i < m_dataSize; ++i)
     {
-        tree.computeNonEdgeForces(i, m_gradientAccuracy, buff.data(), sumQ);
+        tree.computeNonEdgeForces(i, squaredGradientAccuracy, buff.data(), sumQ);
     }
 
     // Loop over all edges to compute t-SNE error
@@ -324,13 +327,14 @@ double TSNE::gaussNumber()
 {
     // Knuth, Art of Computer Programming vol v2, Section 3.4.1, Algorithm P (p.117)
 
+    const auto invMax = 1.0 / m_gen.max();
     double S, V1, V2;
     // executed 1.27 times on average
     do
     {
         // V1, V2 uniformly distributed between -1 and +l.
-        V1 = 2.0 * static_cast<double>(m_gen()) / m_gen.max() - 1.0;
-        V2 = 2.0 * static_cast<double>(m_gen()) / m_gen.max() - 1.0;
+        V1 = 2.0 * static_cast<double>(m_gen()) * invMax - 1.0;
+        V2 = 2.0 * static_cast<double>(m_gen()) * invMax - 1.0;
         S = V1 * V1 + V2 * V2;
     }
     while (S >= 1);
@@ -615,9 +619,9 @@ void TSNE::runApproximation()
     auto uY = Vector2D<double>(m_dataSize, m_outputDimensions);
     auto gains = Vector2D<double>(m_dataSize, m_outputDimensions, 1.0);
 
-	// Perform main training loop
+    // Perform main training loop
     std::cout << " Input similarities computed. Learning embedding..." << std::endl;
-	for (unsigned int iteration = 1; iteration <= m_iterations; ++iteration)
+    for (unsigned int iteration = 1; iteration <= m_iterations; ++iteration)
     {
 		// Compute approximate gradient
         auto gradients =
@@ -1106,7 +1110,7 @@ void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
         obj_X[n].index = n;
         obj_X[n].data.assign(m_data[n], m_data[n] + m_inputDimensions);
     }
-	vantagePointTree.create(obj_X);
+    vantagePointTree.create(obj_X);
 
 	// Loop over all points to find nearest neighbors
 	std::cout << "building vantage point tree..." << std::endl;
@@ -1136,7 +1140,8 @@ void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
 			// Compute Gaussian kernel row
 			for (unsigned int m = 0; m < K; ++m)
             {
-                cur_P[m] = exp(-beta * distances[m + 1] * distances[m + 1]);
+                // distances are expected to be squared
+                cur_P[m] = exp(-beta * distances[m + 1]);
             }
 
 			// Compute entropy of current row
@@ -1149,7 +1154,8 @@ void TSNE::computeGaussianPerplexity(SparseMatrix & similarities) const
 			double H = 0.0;
 			for (unsigned int m = 0; m < K; ++m)
             {
-                H += beta * (distances[m + 1] * distances[m + 1] * cur_P[m]);
+                // distances are expected to be squared
+                H += beta * (distances[m + 1] * cur_P[m]);
             }
 			H = (H / sum_P) + log(sum_P);
 

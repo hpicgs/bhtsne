@@ -38,8 +38,9 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
 
     // serial
     // TODO rename to negativeForces everywhere
+    const auto squaredGradientAccuracy = gradientAccuracy * gradientAccuracy;
     for (unsigned int n = 0; n < dataSize; ++n) {
-        tree.computeNonEdgeForces(n, gradientAccuracy, negativeForces[n], sumQ);
+        tree.computeNonEdgeForces(n, squaredGradientAccuracy, negativeForces[n], sumQ);
     }
 
     // parallel
@@ -47,7 +48,7 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
     #pragma omp parallel for reduction(+:omp_sumQ)
     for (int n = 0; n < dataSize; ++n)
     {
-        tree.computeNonEdgeForces(n, gradientAccuracy, omp_negativeForces[n], omp_sumQ);
+        tree.computeNonEdgeForces(n, squaredGradientAccuracy, omp_negativeForces[n], omp_sumQ);
     }
 
     ASSERT_FLOAT_EQ(sumQ, omp_sumQ); // lower precision because openmp might change precision of fp operations
