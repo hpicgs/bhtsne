@@ -216,36 +216,4 @@ void SpacePartitioningTree<D>::computeNonEdgeForces(unsigned int pointIndex, dou
 }
 
 
-// Computes edge forces
-template<unsigned int D>
-void SpacePartitioningTree<D>::computeEdgeForces(const std::vector<unsigned int> & rows,
-                                                 const std::vector<unsigned int> & columns,
-                                                 const std::vector<double> & values,
-                                                 Vector2D<double> & forces)
-{
-    // Loop over all edges in the graph
-    auto distances = std::array<double, D>();
-    for(unsigned int n = 0; n < forces.height(); ++n)
-    {
-        for(auto i = rows[n]; i < rows[n + 1]; ++i)
-        {
-            // Compute pairwise distance and Q-value
-            double sumOfSquaredDistances = 1.0;
-            for (unsigned int d = 0; d < D; ++d)
-            {
-                distances[d] = m_data[n][d] - m_data[columns[i]][d];
-                sumOfSquaredDistances += distances[d] * distances[d];
-            }
-            double force = values[i] / sumOfSquaredDistances;
-
-            // Sum positive force
-            for(unsigned int d = 0; d < D; ++d)
-            {
-                forces[n][d] += force * distances[d];
-            }
-        }
-    }
-}
-
-
 } // namespace bhtsne

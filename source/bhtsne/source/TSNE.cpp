@@ -73,29 +73,54 @@ Vector2D<double> TSNE::computeGradient(SparseMatrix & similarities)
     // Construct space-partitioning tree on current map
     auto tree = SpacePartitioningTree<D>(m_result);
 
+    // Loop over all edges in the graph
+    auto distances = std::array<double, D>();
+
     // Compute all terms required for t-SNE gradient
     auto positiveForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
-    tree.computeEdgeForces(similarities.rows, similarities.columns, similarities.values, positiveForces);
-
     auto negativeForces = Vector2D<double>(m_dataSize, m_outputDimensions, 0.0);
-    double sumQ = 0.0;
-    // omp version on windows (2.0) does only support signed loop variables, should be unsigned
     const auto squaredGradientAccuracy = m_gradientAccuracy * m_gradientAccuracy;
 
+    auto & rows = similarities.rows;
+    auto & columns = similarities.columns;
+    auto & values = similarities.values;
+
+    double sumQ = 0.0;
+    // omp version on windows (2.0) does only support signed loop variables, should be unsigned
     #pragma omp parallel for reduction(+:sumQ)
-    for (int n = 0; n < m_dataSize; ++n)
+    for(int n = 0; n < m_dataSize; ++n)
     {
+        for(auto i = rows[n]; i < rows[n + 1]; ++i)
+        {
+            // Compute pairwise distance and Q-value
+            double sumOfSquaredDistances = 1.0;
+            for (unsigned int d = 0; d < D; ++d)
+            {
+                distances[d] = m_result[n][d] - m_result[columns[i]][d];
+                sumOfSquaredDistances += distances[d] * distances[d];
+            }
+            double force = values[i] / sumOfSquaredDistances;
+
+            // Sum positive force
+            for(unsigned int d = 0; d < D; ++d)
+            {
+                positiveForces[n][d] += force * distances[d];
+            }
+        }
+
         tree.computeNonEdgeForces(n, squaredGradientAccuracy, negativeForces[n], sumQ);
     }
 
     auto result = Vector2D<double>(m_dataSize, m_outputDimensions);
     // Compute final t-SNE gradient
-    for (unsigned int i = 0; i < m_dataSize; ++i)
+
+    auto r = result[0];
+    auto p = positiveForces[0];
+    auto n = negativeForces[0];
+
+    for (unsigned int i = 0; i < m_dataSize * m_outputDimensions; ++i)
     {
-        for (unsigned int j = 0; j < m_outputDimensions; ++j)
-        {
-            result[i][j] = positiveForces[i][j] - (negativeForces[i][j] / sumQ);
-        }
+        r[i] = p[i] - n[i] / sumQ;
     }
     return result;
 }
@@ -125,9 +150,10 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
     }
 
 	// Perform the computation of the gradient
+    #pragma omp parallel for
 	for (unsigned int n = 0; n < m_dataSize; ++n)
     {
-    	for (unsigned int m = 0; m < m_dataSize; ++m)
+        for (unsigned int m = 0; m < m_dataSize; ++m)
         {
             if (n == m)
             {
@@ -621,6 +647,7 @@ void TSNE::runApproximation()
 
     // Perform main training loop
     std::cout << " Input similarities computed. Learning embedding..." << std::endl;
+
     for (unsigned int iteration = 1; iteration <= m_iterations; ++iteration)
     {
 		// Compute approximate gradient
@@ -629,12 +656,13 @@ void TSNE::runApproximation()
             (m_outputDimensions == 3) ? computeGradient<3>(inputSimilarities) :
             computeGradient<0>(inputSimilarities);
 
-		// Update gains
+        // Update gains
         for (unsigned int i = 0; i < m_dataSize; ++i)
         {
             for (unsigned int j = 0; j < m_outputDimensions; ++j)
             {
-                if (sign(gradients[i][j]) != sign(uY[i][j]))
+                auto & uYij = uY[i][j];
+                if (sign(gradients[i][j]) != sign(uYij))
                 {
                     gains[i][j] += 0.2;
                 }
@@ -643,16 +671,11 @@ void TSNE::runApproximation()
                     gains[i][j] *= 0.8;
                 }
                 gains[i][j] = std::max(0.1, gains[i][j]);
-            }
-        }
 
-		// Perform gradient update (with momentum and gains)
-        for (unsigned int i = 0; i < m_dataSize; ++i)
-        {
-            for (unsigned int j = 0; j < m_outputDimensions; ++j)
-            {
-                uY[i][j] = momentum * uY[i][j] - eta * gains[i][j] * gradients[i][j];
-                m_result[i][j] += uY[i][j];
+                // Perform gradient update (with momentum and gains)std::array<double, D>{}
+
+                uYij = momentum * uYij - eta * gains[i][j] * gradients[i][j];
+                m_result[i][j] += uYij;
             }
         }
 
@@ -674,7 +697,7 @@ void TSNE::runApproximation()
         }
 
 		// Print out progress
-		if (iteration % 50 == 0 || iteration == m_iterations)
+        /*if (iteration % 50 == 0 || iteration == m_iterations)
         {
 			// doing approximate computation here!
 			double error =
@@ -682,7 +705,7 @@ void TSNE::runApproximation()
                 (m_outputDimensions == 3) ? evaluateError<3>(inputSimilarities) :
                 evaluateError<0>(inputSimilarities); // assert(false)
 			std::cout << "Iteration " << iteration << ": error is " << error << std::endl;
-		}
+        }*/
 	}
 }
 

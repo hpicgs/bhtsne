@@ -41,8 +41,6 @@ namespace bhtsne {
 
         // TODO return forces instead of io param
         void computeNonEdgeForces(unsigned int pointIndex, double squaredTheta, double * forces, double & forceSum) const;
-        void computeEdgeForces(const std::vector<unsigned int> & rows, const std::vector<unsigned int> & columns,
-                               const std::vector<double> & values, Vector2D<double> & forces);
     };
 }
 
