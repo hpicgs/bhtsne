@@ -11,12 +11,11 @@ namespace bhtsne {
 
 // Default constructor for SpacePartitioningTree -- build tree, too!
 template<unsigned int D>
-SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data)
+SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D & data)
     : m_data(data)
     , m_pointIndex(0)
     , m_isLeaf(true)
     , m_cumulativeSize(1)
-    , m_numberOfChildren(1u << D) // = 2^Dimensions
 {
     auto numberOfPoints = static_cast<unsigned int>(data.height());
     assert(numberOfPoints > 0);
@@ -67,7 +66,7 @@ SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data)
 
 // Constructor for SpacePartitioningTree with particular size (do not fill the tree)
 template<unsigned int D>
-SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data, const std::array<double, D> & centers,
+SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D & data, const std::array<double, D> & centers,
                                                 const std::array<double, D> & radii, unsigned int new_index)
     : m_centers(centers)
     , m_radii(radii)
@@ -75,7 +74,6 @@ SpacePartitioningTree<D>::SpacePartitioningTree(const Vector2D<double> & data, c
     , m_pointIndex(new_index)
     , m_isLeaf(true)
     , m_cumulativeSize(1)
-    , m_numberOfChildren(1u << D) // = 2^Dimensions
 {
     auto new_point = m_data[new_index];
     for (unsigned int d = 0; d < D; ++d)
@@ -222,7 +220,7 @@ template<unsigned int D>
 void SpacePartitioningTree<D>::computeEdgeForces(const std::vector<unsigned int> & rows,
                                                  const std::vector<unsigned int> & columns,
                                                  const std::vector<double> & values,
-                                                 Vector2D<double> & forces)
+                                                 Vector2D & forces)
 {
     // Loop over all edges in the graph
     auto distances = std::array<double, D>();

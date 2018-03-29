@@ -34,7 +34,9 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(headers
     ${include_path}/TSNE.h
     ${include_path}/Vector2D.h
-    ${include_path}/Vector2D.inl
+	${include_path}/AlignedVector2D.h
+	${include_path}/Allocator.h
+	${include_path}/Allocator.inl
     ${include_path}/SparseMatrix.h
 )
 
@@ -44,6 +46,8 @@ set(sources
     ${source_path}/VantagePointTree.h
     ${source_path}/VantagePointTree.cpp
     ${source_path}/TSNE.cpp
+	${source_path}/Vector2D.cpp
+	${source_path}/AlignedVector2D.cpp
 )
 
 # Group source files

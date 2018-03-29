@@ -11,7 +11,7 @@ public:
 TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
 {
 
-    const auto result = Vector2D<double>{ {
+    const auto result = Vector2D{ {
         { 0,56,19,80,58 },
         { 47,35,89,82,74 },
         { 17,85,71,51,30 },
@@ -30,8 +30,8 @@ TEST_F(SpacePartitioningTreeTest, OpenMPComputeNonEdgeForces)
     const double gradientAccuracy = 0.2;
 
     auto tree = SpacePartitioningTree<outputDimensions>(result);
-    auto negativeForces = Vector2D<double>(dataSize, outputDimensions, 0.0);
-    auto omp_negativeForces = Vector2D<double>(dataSize, outputDimensions, 0.0);
+    auto negativeForces = Vector2D(dataSize, outputDimensions, 0.0);
+    auto omp_negativeForces = Vector2D(dataSize, outputDimensions, 0.0);
 
     double sumQ = 0.0;
     double omp_sumQ = 0.0;
