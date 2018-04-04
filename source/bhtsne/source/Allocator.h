@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 
 /**
  * @see http://jmabille.github.io/blog/2014/12/06/aligned-memory-allocator/
@@ -15,7 +17,7 @@ public:
     typedef T* pointer;
     typedef const T* const_pointer;
     typedef size_t size_type;
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
 
     template <class U>
     struct rebind

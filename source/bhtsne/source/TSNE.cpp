@@ -151,7 +151,7 @@ Vector2D<double> TSNE::computeGradientExact(const Vector2D<double> & Perplexity)
 
 	// Perform the computation of the gradient
     #pragma omp parallel for
-	for (unsigned int n = 0; n < m_dataSize; ++n)
+	for (int n = 0; n < m_dataSize; ++n)
     {
         for (unsigned int m = 0; m < m_dataSize; ++m)
         {

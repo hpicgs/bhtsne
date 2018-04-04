@@ -44,6 +44,8 @@ set(sources
     ${source_path}/VantagePointTree.h
     ${source_path}/VantagePointTree.cpp
     ${source_path}/TSNE.cpp
+	${source_path}/Allocator.h
+	${source_path}/Allocator.inl
 )
 
 # Group source files
