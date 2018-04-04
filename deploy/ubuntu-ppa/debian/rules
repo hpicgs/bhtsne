@@ -1,29 +1,77 @@
 #!/usr/bin/make -f
 
-BUILDDIR = build
+BUILDDIR = ./build
+BUILDDEBUGDIR = ./build-debug
 
 # firstly called by launchpad
 clean:
 	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDEBUGDIR)
 
 # secondly called by launchpad
 build: build-arch
 
+# TODO find a simpler way to conditionally set CXX=g++5 when g++ version < 5; update-alternatives requires sudo...
 build-arch:
 	mkdir $(BUILDDIR)
-	cd $(BUILDDIR);cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DOPTION_BUILD_TESTS=Off -DOPTION_BUILD_TOOLS=On -DOPTION_BUILD_DOCS=On ..
+	cd $(BUILDDIR); \
+	if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; \
+	then export CXX=g++-5; fi; \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DOPTION_BUILD_TESTS=Off \
+	-DOPTION_BUILD_TOOLS=On \
+	-DOPTION_BUILD_DOCS=On ../
 	make -C $(BUILDDIR)
+
+	mkdir $(BUILDDEBUGDIR)
+	cd $(BUILDDEBUGDIR); \
+	if dpkg --compare-versions `dpkg -s g++ | grep '^Version: ' | grep -oP '.\..(\..)?'` lt 5; \
+	then export CXX=g++-5; fi; \
+	cmake -DCMAKE_BUILD_TYPE=Debug \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DOPTION_BUILD_TESTS=Off \
+	-DOPTION_BUILD_TOOLS=Off \
+	-DOPTION_BUILD_DOCS=Off ../
+	make -C $(BUILDDEBUGDIR)
 
 # thirdly called by launchpad
 binary: binary-arch
 
-binary-arch: bhtsne
+binary-arch: libbhtsne libbhtsne-dev libbhtsne-tools libbhtsne-docs libbhtsne-all
 
-bhtsne:
-	cd $(BUILDDIR); DESTDIR=../debian/tmp make install
-	mkdir -p debian/tmp/DEBIAN
-	dpkg-gencontrol -pbhtsne
-	dpkg --build debian/tmp ..
-	rm -rf debian/tmp
+libbhtsne:
+	cd $(BUILDDIR); DESTDIR=../debian/tmp COMPONENT=runtime make component_install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
 
-.PHONY: build build-arch binary binary-arch clean bhtsne
+libbhtsne-dev:
+	cd $(BUILDDIR); DESTDIR=../debian/tmp COMPONENT=dev make component_install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne-dev
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+libbhtsne-tools:
+	cd $(BUILDDIR);	DESTDIR=../debian/tmp COMPONENT=tools make component_install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne-tools
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+libbhtsne-docs:
+	cd $(BUILDDIR);	DESTDIR=../debian/tmp COMPONENT=docs make component_install
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne-docs
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+libbhtsne-all:
+	mkdir -p ./debian/tmp/DEBIAN
+	dpkg-gencontrol -plibbhtsne-all
+	dpkg --build ./debian/tmp ../
+	rm -rf ./debian/tmp
+
+.PHONY: build build-arch binary binary-arch clean libbhtsne libbhtsne-dev libbhtsne-tools libbhtsne-docs libbhtsne-all

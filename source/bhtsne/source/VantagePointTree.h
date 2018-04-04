@@ -42,24 +42,25 @@
 #include <random>
 #include <functional>
 
+#include "Allocator.h"
+
 struct DataPoint
 {
     unsigned int dimensions;
     unsigned int index;
-    std::vector<double> data;
+    std::vector<double, aligned_allocator<double, sizeof(double)*4>> data;
 
+    DataPoint();
     DataPoint(const unsigned int dimensions, const unsigned int index, const double * x);
 };
-
-using DistanceFunction = std::function<double(const DataPoint &, const DataPoint &)>;
 
 class VantagePointTree
 {
 public:
-    explicit VantagePointTree(const unsigned long randomSeed, DistanceFunction distanceFunction = euclideanDistance);
+    explicit VantagePointTree(const unsigned long randomSeed);
 
     // possible distance functions
-    static double euclideanDistance(const DataPoint & a, const DataPoint & b);
+    static double squaredEuclideanDistance(const DataPoint & a, const DataPoint & b);
     //TODO create some more common distance functions
 
     // Function to create a new VantagePointTree from data
@@ -73,7 +74,6 @@ private:
     std::vector<DataPoint> m_items;
     double m_maxDistance;
     std::mt19937 m_randomNumberGenerator;
-    DistanceFunction m_distanceFunction;
 
 
     // Single node of a VP tree (has a point and radius; left children are closer to point than the radius)

@@ -10,24 +10,26 @@ namespace bhtsne
 
 template<typename T>
 Vector2D<T>::Vector2D(size_t height, size_t width, T initValue)
+: m_width(0)
 {
     initialize(height, width, initValue);
 }
 
 template<typename T>
 Vector2D<T>::Vector2D(Vector2D<T> && other)
+: m_vector(std::move(other.m_vector))
+, m_width(other.m_width)
 {
-    m_vector = std::move(other.m_vector);
-    m_width = other.m_width;
 }
 
 template<typename T>
-Vector2D<T>::Vector2D(std::vector<std::vector<double>> vec)
+Vector2D<T>::Vector2D(const std::vector<std::vector<double>> & vec)
+: m_width(0)
 {
     if (vec.size() > 0)
     {
         m_width = vec.front().size();
-        for (auto & each : vec)
+        for (const auto & each : vec)
         {
             appendRow(each);
         }
@@ -50,7 +52,7 @@ void Vector2D<T>::initialize(size_t height, size_t width, T initValue)
 }
 
 template<typename T>
-void Vector2D<T>::appendRow(std::vector<T>& row)
+void Vector2D<T>::appendRow(const std::vector<T>& row)
 {
     assert(m_width == row.size());
     m_vector.insert(m_vector.end(), row.begin(), row.end());

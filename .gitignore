@@ -12,6 +12,10 @@
 *.la
 *.a
 
+# data dir
+/data/*
+!/data/small.csv
+
 # Build dir
 build*
 debug_build

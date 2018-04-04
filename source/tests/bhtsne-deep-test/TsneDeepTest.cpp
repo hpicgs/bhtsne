@@ -148,7 +148,52 @@ TEST_F(TsneDeepTest, EvaluateErrorExact)
 
 TEST_F(TsneDeepTest, SymmetrizeMatrix)
 {
-    //FAIL();
+    m_tsne.m_data = s_testDataSet;
+    m_tsne.m_dataSize = s_testDataSet.size();
+    m_tsne.m_inputDimensions = s_testDataSet[0].size();
+    m_tsne.m_perplexity = 2;
+    m_tsne.m_outputDimensions = 1;
+    m_tsne.m_seed = 1;
+    m_tsne.m_gradientAccuracy = 0.1;
+
+    m_tsne.m_gen.seed(m_tsne.m_seed);
+    m_tsne.m_result.initialize(m_tsne.m_dataSize, m_tsne.m_outputDimensions);
+
+    m_tsne.zeroMean(m_tsne.m_data);
+    m_tsne.normalize(m_tsne.m_data);
+
+    auto inputSimilarities = bhtsne::SparseMatrix();
+    inputSimilarities.values = { 0.733896, 0.230389, 0.0334071, 0.00223752, 6.92224e-05, 9.89184e-07, 0.5, 0.5, 5.62676e-08, 1.47595e-19, 9.02426e-36, 1.2861e-56, 0.5, 0.5, 5.62676e-08, 5.62676e-08, 1.47595e-19, 9.02426e-36, 0.5, 0.5, 5.62676e-08, 5.62676e-08, 1.47595e-19, 1.47595e-19, 0.5, 0.5, 5.62676e-08, 5.62676e-08, 1.47595e-19, 9.02426e-36, 0.5, 0.5, 5.62676e-08, 1.47595e-19, 9.02426e-36, 1.2861e-56, 0.733896, 0.230389, 0.0334071, 0.00223752, 6.92224e-05, 9.89184e-07 };
+    inputSimilarities.columns = { 1, 2, 3, 4, 5, 6, 2, 0, 3, 4, 5, 6, 3, 1, 4, 0, 5, 6, 4, 2, 5, 1, 6, 0, 5, 3, 2, 6, 1, 0, 4, 6, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0 };
+    inputSimilarities.rows = { 0, 6, 12, 18, 24, 30, 36, 42 };
+
+    auto expected = bhtsne::SparseMatrix();
+    expected.values = { 0.616948, 0.11519453, 0.01670355, 0.00111876, 3.46112e-05, 9.89184e-07, 0.616948, 0.5, 5.62676e-08, 1.47595e-19, 9.02426e-36, 3.46112e-05, 0.11519453, 0.5, 0.5, 5.62676e-08, 1.47595e-19, 0.00111876, 0.01670355, 5.62676e-08, 0.5, 0.5, 5.62676e-08, 0.01670355, 0.00111876, 1.47595e-19, 5.62676e-08, 0.5, 0.5, 0.11519453, 3.46112e-05, 9.02426e-36, 1.47595e-19, 5.62676e-08, 0.5, 0.616948, 9.89184e-07, 3.46112e-05, 0.00111876, 0.01670355, 0.11519453, 0.616948 };
+    expected.columns = { 1, 2, 3, 4, 5, 6, 0, 2, 3, 4, 5, 6, 0, 1, 3, 4, 5, 6, 0, 1, 2, 4, 5, 6, 0, 1, 2, 3, 5, 6, 0, 1, 2, 3, 4, 6, 0, 1, 2, 3, 4, 5 };
+    expected.rows = { 0, 6, 12, 18, 24, 30, 36, 42 };
+
+    EXPECT_NO_THROW(m_tsne.symmetrizeMatrix(inputSimilarities));
+
+    auto itValues = inputSimilarities.values.begin();
+    auto itExpValues = expected.values.begin();
+    while (itValues != inputSimilarities.values.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExpValues++), *(itValues++));
+    }
+
+    auto itColumns = inputSimilarities.columns.begin();
+    auto itExpColumns = expected.columns.begin();
+    while (itColumns != inputSimilarities.columns.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExpColumns++), *(itColumns++));
+    }
+
+    auto itRows = inputSimilarities.rows.begin();
+    auto itExpRows = expected.rows.begin();
+    while (itRows != inputSimilarities.rows.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExpRows++), *(itRows++));
+    }
 }
 
 TEST_F(TsneDeepTest, GaussNumber)
@@ -465,17 +510,82 @@ TEST_F(TsneDeepTest, LoadCin)
 
 TEST_F(TsneDeepTest, Run)
 {
-    //FAIL();
+    m_tsne.m_dataSize = 3;
+    m_tsne.m_perplexity = 1;
+    EXPECT_THROW(m_tsne.run(), std::invalid_argument);
+
+    m_tsne.m_data = s_testDataSet;
+    m_tsne.m_dataSize = s_testDataSet.size();
+    m_tsne.m_inputDimensions = s_testDataSet[0].size();
+    m_tsne.m_perplexity = 2;
+    m_tsne.m_outputDimensions = 1;
+    m_tsne.m_seed = 1;
+
+    m_tsne.m_gradientAccuracy = 0;
+    auto expected = std::vector<double>{ -72.9579, 237.73738, 80.6992, -236.04152, -166.73192, 5.9935555, 151.30116 };
+    EXPECT_NO_THROW(m_tsne.run());
+    auto it = m_tsne.m_result.begin();
+    auto itExp = expected.begin();
+    while (it != m_tsne.m_result.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExp++), *(it++));
+    }
+
+    m_tsne.m_gradientAccuracy = 0.1;
+    expected = std::vector<double>{ 6.74018e-05, -5.00873e-06, -2.8833609e-05, -6.8209149e-05, -6.69799e-05, 3.64486e-05, 6.5181e-05 };
+    EXPECT_NO_THROW(m_tsne.run());
+    it = m_tsne.m_result.begin();
+    itExp = expected.begin();
+    while (it != m_tsne.m_result.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExp++), *(it++));
+    }
 }
 
 TEST_F(TsneDeepTest, RunApproximation)
 {
-    //FAIL();
+    m_tsne.m_data = s_testDataSet;
+    m_tsne.m_dataSize = s_testDataSet.size();
+    m_tsne.m_inputDimensions = s_testDataSet[0].size();
+    m_tsne.m_perplexity = 2;
+    m_tsne.m_outputDimensions = 1;
+    m_tsne.m_seed = 1;
+    m_tsne.m_gradientAccuracy = 0.1;
+
+    m_tsne.m_gen.seed(m_tsne.m_seed);
+    m_tsne.m_result.initialize(m_tsne.m_dataSize, m_tsne.m_outputDimensions);
+
+    auto expected = std::vector<double>{ 6.74018e-05, -5.00873e-06, -2.8833609e-05, -6.8209149e-05, -6.69799e-05, 3.64486e-05, 6.5181e-05 };
+    EXPECT_NO_THROW(m_tsne.runApproximation());
+    auto it = m_tsne.m_result.begin();
+    auto itExp = expected.begin();
+    while (it != m_tsne.m_result.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExp++), *(it++));
+    }
 }
 
 TEST_F(TsneDeepTest, RunExact)
 {
-    //FAIL();
+    m_tsne.m_data = s_testDataSet;
+    m_tsne.m_dataSize = s_testDataSet.size();
+    m_tsne.m_inputDimensions = s_testDataSet[0].size();
+    m_tsne.m_perplexity = 2;
+    m_tsne.m_outputDimensions = 1;
+    m_tsne.m_seed = 1;
+    m_tsne.m_gradientAccuracy = 0;
+
+    m_tsne.m_gen.seed(m_tsne.m_seed);
+    m_tsne.m_result.initialize(m_tsne.m_dataSize, m_tsne.m_outputDimensions);
+
+    auto expected = std::vector<double>{ -72.9579, 237.73738, 80.6992, -236.04152, -166.73192, 5.9935555, 151.30116 };
+    EXPECT_NO_THROW(m_tsne.runExact());
+    auto it = m_tsne.m_result.begin();
+    auto itExp = expected.begin();
+    while (it != m_tsne.m_result.end())
+    {
+        EXPECT_FLOAT_EQ(*(itExp++), *(it++));
+    }
 }
 
 TEST_F(TsneDeepTest, SaveToStream)

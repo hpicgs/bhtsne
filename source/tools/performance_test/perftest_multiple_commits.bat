@@ -23,7 +23,7 @@ for /F "tokens=*" %%A in (..\commits.txt) do (
 	mkdir build
 	cd build
 	echo|set /p="Running cmake... "
-	cmake .. > nul
+	cmake -G "Visual Studio 15 2017 Win64" .. > nul
 	cmake --build . > nul
 	echo Done
 	echo|set /p="Compiling... "
