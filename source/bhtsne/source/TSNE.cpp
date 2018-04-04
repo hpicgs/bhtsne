@@ -697,7 +697,7 @@ void TSNE::runApproximation()
         }
 
 		// Print out progress
-        /*if (iteration % 50 == 0 || iteration == m_iterations)
+        if (iteration % 50 == 0 || iteration == m_iterations)
         {
 			// doing approximate computation here!
 			double error =
@@ -705,7 +705,7 @@ void TSNE::runApproximation()
                 (m_outputDimensions == 3) ? evaluateError<3>(inputSimilarities) :
                 evaluateError<0>(inputSimilarities); // assert(false)
 			std::cout << "Iteration " << iteration << ": error is " << error << std::endl;
-        }*/
+        }
 	}
 }
 
